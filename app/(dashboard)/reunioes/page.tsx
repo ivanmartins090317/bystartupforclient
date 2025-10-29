@@ -1,47 +1,66 @@
-import {createServerComponentClient} from "@/lib/supabase/server";
-import {redirect} from "next/navigation";
+import {
+  getUserProfile,
+  getContractIds,
+  getMeetingsByContracts
+} from "@/lib/supabase/helpers";
+import {ErrorMessage} from "@/components/shared/error-message";
 import {MeetingsList} from "@/components/reunioes/meetings-list";
 import {PageHeader} from "@/components/shared/page-header";
 
 export default async function ReunioesPage() {
-  const supabase = await createServerComponentClient();
+  // Buscar perfil
+  const profileResult = await getUserProfile();
 
-  const {
-    data: {user}
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
+  if (profileResult.isError || !profileResult.data) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Minhas Reuniões"
+          description="Acompanhe suas reuniões agendadas e acesse resumos de reuniões anteriores"
+        />
+        <ErrorMessage
+          title="Erro ao carregar dados"
+          message={profileResult.error || "Não foi possível carregar seus dados."}
+        />
+      </div>
+    );
   }
 
-  // Buscar perfil e empresa
-  const {data: profile} = await supabase
-    .from("profiles")
-    .select("company_id")
-    .eq("id", user.id)
-    .single();
+  // Buscar IDs dos contratos
+  const contractIdsResult = await getContractIds(profileResult.data.company_id);
 
-  if (!profile) {
-    redirect("/login");
+  if (contractIdsResult.isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Minhas Reuniões"
+          description="Acompanhe suas reuniões agendadas e acesse resumos de reuniões anteriores"
+        />
+        <ErrorMessage
+          title="Erro ao carregar contratos"
+          message={contractIdsResult.error || "Não foi possível carregar seus contratos."}
+        />
+      </div>
+    );
   }
 
-  // Buscar contratos da empresa
-  const {data: contracts} = await supabase
-    .from("contracts")
-    .select("id")
-    .eq("company_id", profile.company_id);
+  // Buscar reuniões
+  const meetingsResult = await getMeetingsByContracts(contractIdsResult.data || []);
 
-  const contractIds = contracts?.map((c) => c.id) || [];
-
-  // Buscar todas as reuniões dos contratos
-  const {data: meetings} =
-    contractIds.length > 0
-      ? await supabase
-          .from("meetings")
-          .select("*")
-          .in("contract_id", contractIds)
-          .order("meeting_date", {ascending: false})
-      : {data: []};
+  if (meetingsResult.isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Minhas Reuniões"
+          description="Acompanhe suas reuniões agendadas e acesse resumos de reuniões anteriores"
+        />
+        <ErrorMessage
+          title="Erro ao carregar reuniões"
+          message={meetingsResult.error || "Não foi possível carregar suas reuniões."}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -50,7 +69,7 @@ export default async function ReunioesPage() {
         description="Acompanhe suas reuniões agendadas e acesse resumos de reuniões anteriores"
       />
 
-      <MeetingsList meetings={meetings || []} />
+      <MeetingsList meetings={meetingsResult.data || []} />
     </div>
   );
 }

@@ -1,54 +1,47 @@
 import {ReactNode} from "react";
-import {redirect} from "next/navigation";
-import {createServerComponentClient} from "@/lib/supabase/server";
+import {getUserProfile} from "@/lib/supabase/helpers";
+import {ErrorMessage} from "@/components/shared/error-message";
 import {DashboardHeader} from "@/components/dashboard/dashboard-header";
 import {DashboardSidebar} from "@/components/dashboard/dashboard-sidebar";
 import {SupportButton} from "@/components/shared/support-button";
 
 export default async function DashboardLayout({children}: {children: ReactNode}) {
-  const supabase = await createServerComponentClient();
+  // Usa helper centralizado com tratamento de erro
+  const profileResult = await getUserProfile();
 
-  const {
-    data: {user}
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
+  // Se houver erro, mostrar mensagem de erro
+  if (profileResult.isError) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full">
+          <ErrorMessage
+            title="Erro ao carregar perfil"
+            message={
+              profileResult.error ||
+              "Não foi possível carregar seus dados. Por favor, tente novamente."
+            }
+          />
+        </div>
+      </div>
+    );
   }
 
-  // Buscar perfil e empresa do usuário
-  // Primeiro, buscar apenas o perfil
-  const {data: profile, error: profileError} = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
-
-  // Se não encontrar perfil, buscar empresa separadamente
-  let company = null;
-  if (profile) {
-    const {data: companyData, error: companyError} = await supabase
-      .from("companies")
-      .select("*")
-      .eq("id", profile.company_id)
-      .single();
-
-    company = companyData;
+  if (!profileResult.data) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6">
+        <div className="max-w-md w-full">
+          <ErrorMessage
+            title="Perfil não encontrado"
+            message="Seu perfil não foi encontrado. Entre em contato com o suporte."
+          />
+        </div>
+      </div>
+    );
   }
-
-  if (!profile) {
-    redirect("/login");
-  }
-
-  // Criar objeto profile completo
-  const profileWithCompany = {
-    ...profile,
-    companies: company
-  };
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader profile={profileWithCompany} />
+      <DashboardHeader profile={profileResult.data} />
 
       <div className="flex">
         <DashboardSidebar />

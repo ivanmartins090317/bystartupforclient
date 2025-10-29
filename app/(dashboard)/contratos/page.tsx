@@ -1,36 +1,44 @@
-import {createServerComponentClient} from "@/lib/supabase/server";
-import {redirect} from "next/navigation";
+import {getUserProfile, getAllCompanyContracts} from "@/lib/supabase/helpers";
+import {ErrorMessage} from "@/components/shared/error-message";
 import {ContractsList} from "@/components/contratos/contracts-list";
 import {PageHeader} from "@/components/shared/page-header";
 
 export default async function ContratosPage() {
-  const supabase = await createServerComponentClient();
+  // Buscar perfil
+  const profileResult = await getUserProfile();
 
-  const {
-    data: {user}
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Buscar perfil e empresa
-  const {data: profile} = await supabase
-    .from("profiles")
-    .select("company_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) {
-    redirect("/login");
+  if (profileResult.isError || !profileResult.data) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Meus Contratos"
+          description="Visualize e gerencie todos os seus contratos com a ByStartup"
+        />
+        <ErrorMessage
+          title="Erro ao carregar dados"
+          message={profileResult.error || "Não foi possível carregar seus dados."}
+        />
+      </div>
+    );
   }
 
   // Buscar todos os contratos da empresa
-  const {data: contracts} = await supabase
-    .from("contracts")
-    .select("*, services(*)")
-    .eq("company_id", profile.company_id)
-    .order("signed_date", {ascending: false});
+  const contractsResult = await getAllCompanyContracts(profileResult.data.company_id);
+
+  if (contractsResult.isError) {
+    return (
+      <div className="space-y-6">
+        <PageHeader
+          title="Meus Contratos"
+          description="Visualize e gerencie todos os seus contratos com a ByStartup"
+        />
+        <ErrorMessage
+          title="Erro ao carregar contratos"
+          message={contractsResult.error || "Não foi possível carregar seus contratos."}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -39,7 +47,7 @@ export default async function ContratosPage() {
         description="Visualize e gerencie todos os seus contratos com a ByStartup"
       />
 
-      <ContractsList contracts={contracts || []} />
+      <ContractsList contracts={contractsResult.data || []} />
     </div>
   );
 }

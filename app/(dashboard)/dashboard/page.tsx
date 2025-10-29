@@ -1,5 +1,12 @@
-import {createServerComponentClient} from "@/lib/supabase/server";
-import {redirect} from "next/navigation";
+import {
+  getUserProfile,
+  getCompanyContracts,
+  getContractIds,
+  getNextMeeting,
+  getRecentMeetings,
+  getContractServices
+} from "@/lib/supabase/helpers";
+import {ErrorMessage} from "@/components/shared/error-message";
 import {WelcomeCard} from "@/components/dashboard/welcome-card";
 import {NextMeetingCard} from "@/components/dashboard/next-meeting-card";
 import {RecentMeetingsCard} from "@/components/dashboard/recent-meetings-card";
@@ -7,59 +14,54 @@ import {ContractServicesCard} from "@/components/dashboard/contract-services-car
 import {ContractsOverviewCard} from "@/components/dashboard/contracts-overview-card";
 
 export default async function DashboardPage() {
-  const supabase = await createServerComponentClient();
+  // Buscar perfil
+  const profileResult = await getUserProfile();
 
-  const {
-    data: {user}
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
+  if (profileResult.isError || !profileResult.data) {
+    return (
+      <div className="space-y-6">
+        <ErrorMessage
+          title="Erro ao carregar dados"
+          message={profileResult.error || "Não foi possível carregar seus dados."}
+        />
+      </div>
+    );
   }
 
-  // Buscar perfil e empresa
-  const {data: profile} = await supabase
-    .from("profiles")
-    .select("*, companies(*)")
-    .eq("id", user.id)
-    .single();
+  const profile = profileResult.data;
+  const companyId = profile.company_id;
 
-  if (!profile) {
-    redirect("/login");
+  // Buscar contratos ativos
+  const contractsResult = await getCompanyContracts(companyId);
+
+  if (contractsResult.isError) {
+    return (
+      <div className="space-y-6">
+        <ErrorMessage
+          title="Erro ao carregar contratos"
+          message={contractsResult.error || "Não foi possível carregar seus contratos."}
+        />
+      </div>
+    );
   }
 
-  // Buscar contratos da empresa
-  const {data: contracts} = await supabase
-    .from("contracts")
-    .select("*")
-    .eq("company_id", profile.company_id)
-    .eq("status", "active")
-    .order("signed_date", {ascending: false});
+  const contracts = contractsResult.data || [];
+  const activeContract = contracts[0];
 
-  const activeContract = contracts?.[0];
+  // Buscar IDs dos contratos para reuniões
+  const contractIdsResult = await getContractIds(companyId);
+  const contractIds = contractIdsResult.data || [];
 
-  // Buscar próxima reunião
-  const {data: nextMeeting} = await supabase
-    .from("meetings")
-    .select("*")
-    .eq("status", "scheduled")
-    .gte("meeting_date", new Date().toISOString())
-    .order("meeting_date", {ascending: true})
-    .limit(1)
-    .single();
+  // Buscar próxima reunião (em paralelo)
+  const nextMeetingResult = await getNextMeeting(contractIds);
 
-  // Buscar últimas reuniões
-  const {data: recentMeetings} = await supabase
-    .from("meetings")
-    .select("*")
-    .in("status", ["completed", "scheduled"])
-    .order("meeting_date", {ascending: false})
-    .limit(5);
+  // Buscar reuniões recentes (em paralelo)
+  const recentMeetingsResult = await getRecentMeetings(contractIds);
 
-  // Buscar serviços do contrato ativo
-  const {data: services} = activeContract
-    ? await supabase.from("services").select("*").eq("contract_id", activeContract.id)
-    : {data: null};
+  // Buscar serviços do contrato ativo (se houver)
+  const servicesResult = activeContract
+    ? await getContractServices(activeContract.id)
+    : {data: [], error: null, isError: false};
 
   return (
     <div className="space-y-6">
@@ -69,22 +71,49 @@ export default async function DashboardPage() {
       />
 
       <div className="grid gap-6 md:grid-cols-2">
-        <NextMeetingCard meeting={nextMeeting} />
+        {nextMeetingResult.isError ? (
+          <ErrorMessage
+            title="Erro ao carregar próxima reunião"
+            message={
+              nextMeetingResult.error ||
+              "Não foi possível carregar informações da reunião."
+            }
+          />
+        ) : (
+          <NextMeetingCard meeting={nextMeetingResult.data} />
+        )}
+
         <ContractsOverviewCard
-          contracts={contracts || []}
+          contracts={contracts}
           activeContractId={activeContract?.id}
         />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <RecentMeetingsCard meetings={recentMeetings || []} />
+          {recentMeetingsResult.isError ? (
+            <ErrorMessage
+              title="Erro ao carregar reuniões"
+              message={
+                recentMeetingsResult.error || "Não foi possível carregar as reuniões."
+              }
+            />
+          ) : (
+            <RecentMeetingsCard meetings={recentMeetingsResult.data || []} />
+          )}
         </div>
         <div>
-          <ContractServicesCard
-            services={services || []}
-            contractTitle={activeContract?.title}
-          />
+          {servicesResult.isError ? (
+            <ErrorMessage
+              title="Erro ao carregar serviços"
+              message={servicesResult.error || "Não foi possível carregar os serviços."}
+            />
+          ) : (
+            <ContractServicesCard
+              services={servicesResult.data || []}
+              contractTitle={activeContract?.title}
+            />
+          )}
         </div>
       </div>
     </div>
