@@ -30,6 +30,10 @@ insights
 companies
     ↓ (1:N)
 support_requests
+
+profiles (role='admin')
+    ↓ (1:1)
+google_calendar_tokens (Fase 5)
 ```
 
 ---
@@ -277,6 +281,44 @@ CREATE INDEX idx_support_requests_status ON support_requests(status);
 
 ---
 
+### 8. **google_calendar_tokens** (Fase 5)
+
+Tabela para armazenar tokens OAuth do Google Calendar do administrador.
+
+```sql
+CREATE TABLE google_calendar_tokens (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  admin_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT,
+  expiry_date BIGINT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  CONSTRAINT unique_admin_tokens UNIQUE (admin_id)
+);
+
+CREATE INDEX idx_google_calendar_tokens_admin_id ON google_calendar_tokens(admin_id);
+CREATE INDEX idx_google_calendar_tokens_expiry ON google_calendar_tokens(expiry_date);
+```
+
+**Campos:**
+
+- `id`: UUID, chave primária
+- `admin_id`: FK para o perfil do admin (deve ter role = 'admin')
+- `access_token`: Token de acesso OAuth (expira em ~1 hora)
+- `refresh_token`: Token para renovar access_token (não expira)
+- `expiry_date`: Timestamp em milissegundos quando o access_token expira
+- `created_at`: Data de criação
+- `updated_at`: Data da última atualização
+
+**Características:**
+
+- Um único registro por admin (constraint UNIQUE)
+- Tokens são renovados automaticamente quando próximos de expirar
+- Protegido por RLS (apenas admins podem ver/editar seus próprios tokens)
+
+---
+
 ## 🔒 Row Level Security (RLS)
 
 ### Políticas de Segurança
@@ -430,6 +472,54 @@ CREATE POLICY "Admins can manage all requests"
   );
 ```
 
+#### **google_calendar_tokens** (Fase 5)
+
+```sql
+-- Apenas admins podem ver seus próprios tokens
+CREATE POLICY "Admins can view own tokens"
+  ON google_calendar_tokens FOR SELECT
+  USING (
+    admin_id = auth.uid() AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- Apenas admins podem inserir seus próprios tokens
+CREATE POLICY "Admins can insert own tokens"
+  ON google_calendar_tokens FOR INSERT
+  WITH CHECK (
+    admin_id = auth.uid() AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- Apenas admins podem atualizar seus próprios tokens
+CREATE POLICY "Admins can update own tokens"
+  ON google_calendar_tokens FOR UPDATE
+  USING (
+    admin_id = auth.uid() AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+
+-- Apenas admins podem deletar seus próprios tokens
+CREATE POLICY "Admins can delete own tokens"
+  ON google_calendar_tokens FOR DELETE
+  USING (
+    admin_id = auth.uid() AND
+    EXISTS (
+      SELECT 1 FROM profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+  );
+```
+
 ---
 
 ## 🔄 Triggers
@@ -458,6 +548,9 @@ CREATE TRIGGER update_meetings_updated_at BEFORE UPDATE ON meetings
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_support_requests_updated_at BEFORE UPDATE ON support_requests
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_google_calendar_tokens_updated_at BEFORE UPDATE ON google_calendar_tokens
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ```
 
@@ -562,6 +655,8 @@ CREATE INDEX idx_contracts_company_status ON contracts(company_id, status);
 CREATE INDEX idx_meetings_contract_date ON meetings(contract_id, meeting_date);
 CREATE INDEX idx_insights_type_published ON insights(type, published_at DESC);
 CREATE INDEX idx_support_requests_company_status ON support_requests(company_id, status);
+CREATE INDEX idx_google_calendar_tokens_admin_id ON google_calendar_tokens(admin_id);
+CREATE INDEX idx_google_calendar_tokens_expiry ON google_calendar_tokens(expiry_date);
 ```
 
 ---

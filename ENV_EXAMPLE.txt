@@ -4,9 +4,16 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3b3VqZmlzY3Fjb3JnamJub3FqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTY1MTcwNywiZXhwIjoyMDc3MjI3NzA3fQ.rkGxN1wkyUmvh3NbojJLeo21YsNdl_QUHrQappsIVHo
 
 # Google Calendar API (Opcional)
-GOOGLE_CLIENT_ID=your-google-client-id
+# Credenciais OAuth - Obter em: https://console.cloud.google.com
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
+
+# Tokens temporários para testes (remover quando Fase 5 for implementada)
+# Obtenha estes tokens seguindo o passo 4.3 do docs/SETUP.md
+# GOOGLE_TEST_ACCESS_TOKEN=ya29.a0AfH6SMB...
+# GOOGLE_TEST_REFRESH_TOKEN=1//0gvQVzQ...  # (opcional, mas recomendado)
+# GOOGLE_TEST_EXPIRY_DATE=1735689600000      # (opcional, timestamp em ms)
 
 # Application
 NEXT_PUBLIC_APP_URL=http://localhost:3000

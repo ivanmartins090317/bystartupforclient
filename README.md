@@ -61,6 +61,11 @@ O **ByStartup Portal do Cliente** é uma aplicação web progressiva (PWA) que o
   - Filtros por departamento e período
   - Visualização de resumos
   - Download de atas de reunião
+  - **Integração com Google Calendar** (Fase 5 ✅)
+    - Salvar reuniões automaticamente no Google Calendar
+    - Reagendar reuniões (sincroniza com Google Calendar)
+    - Excluir reuniões (remove do Google Calendar)
+    - Refresh automático de tokens OAuth
 
 - **Insights Exclusivos**
 
@@ -237,6 +242,12 @@ bystartupforclient/
 │   │   ├── client.ts
 │   │   ├── server.ts
 │   │   └── middleware.ts
+│   ├── google-calendar/     # Integração Google Calendar (Fase 5)
+│   │   ├── auth.ts
+│   │   ├── tokens.ts
+│   │   ├── client.ts
+│   │   ├── helpers.ts
+│   │   └── availability.ts
 │   ├── stores/              # Stores Zustand
 │   └── utils.ts
 ├── types/
@@ -246,6 +257,9 @@ bystartupforclient/
 │   ├── DATABASE_SCHEMA.md
 │   ├── ARCHITECTURE.md
 │   ├── SETUP.md
+│   ├── FASE5_IMPLEMENTACAO.md
+│   ├── migrations/
+│   │   └── 005_google_calendar_tokens.sql
 │   └── seed-data.json
 ├── public/
 │   ├── manifest.json        # PWA manifest
@@ -298,6 +312,7 @@ O aplicativo já está configurado como PWA:
 - **[Arquitetura](docs/ARCHITECTURE.md)** - Decisões arquiteturais e padrões
 - **[Schema do Banco](docs/DATABASE_SCHEMA.md)** - Estrutura completa do banco de dados
 - **[Setup e Configuração](docs/SETUP.md)** - Guia passo a passo de configuração
+- **[Fase 5 - Google Calendar](docs/FASE5_IMPLEMENTACAO.md)** - Integração completa com Google Calendar (tokens no banco, refresh automático)
 
 ---
 
