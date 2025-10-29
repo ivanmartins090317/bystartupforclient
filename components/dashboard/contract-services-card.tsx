@@ -1,0 +1,70 @@
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Badge} from "@/components/ui/badge";
+import {Briefcase, Package} from "lucide-react";
+import {Database} from "@/types/database.types";
+
+type Service = Database["public"]["Tables"]["services"]["Row"];
+
+interface ContractServicesCardProps {
+  services: Service[];
+  contractTitle?: string;
+}
+
+const serviceTypeLabels = {
+  assessoria: "Assessoria",
+  desenvolvimento: "Desenvolvimento",
+  landing_page: "Landing Page",
+  software: "Software"
+};
+
+const serviceTypeColors = {
+  assessoria: "bg-blue-100 text-blue-700",
+  desenvolvimento: "bg-purple-100 text-purple-700",
+  landing_page: "bg-green-100 text-green-700",
+  software: "bg-orange-100 text-orange-700"
+};
+
+export function ContractServicesCard({
+  services,
+  contractTitle
+}: ContractServicesCardProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center gap-2">
+          <Briefcase className="h-5 w-5" />
+          Serviços Contratados
+        </CardTitle>
+        {contractTitle && <p className="text-sm text-gray-600">{contractTitle}</p>}
+      </CardHeader>
+      <CardContent>
+        {services.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">
+            <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p className="font-medium">Nenhum serviço ativo</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {services.map((service) => (
+              <div key={service.id} className="p-3 rounded-lg border bg-white space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <h4 className="font-medium text-secondary-900 flex-1">
+                    {service.name}
+                  </h4>
+                  <Badge className={`text-xs ${serviceTypeColors[service.type]}`}>
+                    {serviceTypeLabels[service.type]}
+                  </Badge>
+                </div>
+                {service.description && (
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {service.description}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
