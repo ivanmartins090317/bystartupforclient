@@ -13,8 +13,18 @@ import {RecentMeetingsCard} from "@/components/dashboard/recent-meetings-card";
 import {ContractServicesCard} from "@/components/dashboard/contract-services-card";
 import {ContractsOverviewCard} from "@/components/dashboard/contracts-overview-card";
 
+/**
+ * Revalidação de cache: 60 segundos
+ *
+ * Por quê 60s?
+ * - Dashboard tem dados mistos (reuniões mudam mais, contratos menos)
+ * - Balanceia performance vs dados atualizados
+ * - Cache reduz carga no Supabase e melhora UX
+ */
+export const revalidate = 60;
+
 export default async function DashboardPage() {
-  // Buscar perfil
+  // 1️⃣ Buscar perfil primeiro (necessário para outras queries)
   const profileResult = await getUserProfile();
 
   if (profileResult.isError || !profileResult.data) {
@@ -31,8 +41,12 @@ export default async function DashboardPage() {
   const profile = profileResult.data;
   const companyId = profile.company_id;
 
-  // Buscar contratos ativos
-  const contractsResult = await getCompanyContracts(companyId);
+  // 2️⃣ Paralelização: Executar contratos e IDs simultaneamente
+  // (não há dependência entre eles, podem rodar ao mesmo tempo)
+  const [contractsResult, contractIdsResult] = await Promise.all([
+    getCompanyContracts(companyId),
+    getContractIds(companyId)
+  ]);
 
   if (contractsResult.isError) {
     return (
@@ -47,21 +61,18 @@ export default async function DashboardPage() {
 
   const contracts = contractsResult.data || [];
   const activeContract = contracts[0];
-
-  // Buscar IDs dos contratos para reuniões
-  const contractIdsResult = await getContractIds(companyId);
   const contractIds = contractIdsResult.data || [];
 
-  // Buscar próxima reunião (em paralelo)
-  const nextMeetingResult = await getNextMeeting(contractIds);
-
-  // Buscar reuniões recentes (em paralelo)
-  const recentMeetingsResult = await getRecentMeetings(contractIds);
-
-  // Buscar serviços do contrato ativo (se houver)
-  const servicesResult = activeContract
-    ? await getContractServices(activeContract.id)
-    : {data: [], error: null, isError: false};
+  // 3️⃣ Paralelização: Executar todas as queries finais simultaneamente
+  // (todas dependem apenas dos contractIds que já temos)
+  const [nextMeetingResult, recentMeetingsResult, servicesResult] = await Promise.all([
+    getNextMeeting(contractIds),
+    getRecentMeetings(contractIds),
+    // Serviços só busca se houver contrato ativo, senão retorna empty
+    activeContract
+      ? getContractServices(activeContract.id)
+      : Promise.resolve({data: [], error: null, isError: false})
+  ]);
 
   return (
     <div className="space-y-6">

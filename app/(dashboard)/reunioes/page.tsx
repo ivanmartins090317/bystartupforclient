@@ -7,6 +7,16 @@ import {ErrorMessage} from "@/components/shared/error-message";
 import {MeetingsList} from "@/components/reunioes/meetings-list";
 import {PageHeader} from "@/components/shared/page-header";
 
+/**
+ * Revalidação de cache: 30 segundos
+ *
+ * Por quê 30s?
+ * - Reuniões podem ser criadas/atualizadas frequentemente
+ * - Balanceia dados atualizados vs performance
+ * - Cache ainda reduz carga significativamente
+ */
+export const revalidate = 30;
+
 export default async function ReunioesPage() {
   // Buscar perfil
   const profileResult = await getUserProfile();

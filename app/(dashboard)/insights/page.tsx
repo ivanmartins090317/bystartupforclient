@@ -3,6 +3,16 @@ import {ErrorMessage} from "@/components/shared/error-message";
 import {InsightsGrid} from "@/components/insights/insights-grid";
 import {PageHeader} from "@/components/shared/page-header";
 
+/**
+ * Revalidação de cache: 300 segundos (5 minutos)
+ *
+ * Por quê 5 minutos?
+ * - Insights (podcasts/vídeos) são conteúdo publicado
+ * - Mudam com menor frequência
+ * - Cache longo melhora performance de mídia
+ */
+export const revalidate = 300;
+
 export default async function InsightsPage() {
   // Buscar perfil
   const profileResult = await getUserProfile();

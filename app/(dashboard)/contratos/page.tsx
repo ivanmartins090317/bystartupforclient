@@ -3,6 +3,16 @@ import {ErrorMessage} from "@/components/shared/error-message";
 import {ContractsList} from "@/components/contratos/contracts-list";
 import {PageHeader} from "@/components/shared/page-header";
 
+/**
+ * Revalidação de cache: 300 segundos (5 minutos)
+ *
+ * Por quê 5 minutos?
+ * - Contratos mudam raramente (são documentos legais)
+ * - Dados mais estáveis permitem cache mais longo
+ * - Melhora performance significativamente
+ */
+export const revalidate = 300;
+
 export default async function ContratosPage() {
   // Buscar perfil
   const profileResult = await getUserProfile();
