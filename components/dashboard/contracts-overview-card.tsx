@@ -3,9 +3,7 @@ import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {FileText, ArrowRight} from "lucide-react";
 import Link from "next/link";
-import {Database} from "@/types/database.types";
-
-type Contract = Database["public"]["Tables"]["contracts"]["Row"];
+import type {Contract} from "@/types";
 
 interface ContractsOverviewCardProps {
   contracts: Contract[];

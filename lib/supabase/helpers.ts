@@ -6,21 +6,19 @@ import {
   isAuthError,
   type ErrorResult
 } from "@/lib/supabase/errors";
-import type {Database} from "@/types/database.types";
-
-type Profile = Database["public"]["Tables"]["profiles"]["Row"];
-type Company = Database["public"]["Tables"]["companies"]["Row"];
-type Contract = Database["public"]["Tables"]["contracts"]["Row"];
-type Meeting = Database["public"]["Tables"]["meetings"]["Row"];
-type Service = Database["public"]["Tables"]["services"]["Row"];
-type Insight = Database["public"]["Tables"]["insights"]["Row"];
+import type {
+  ProfileWithCompany,
+  Contract,
+  ContractWithServices,
+  Meeting,
+  Service,
+  Insight
+} from "@/types";
 
 /**
- * Resultado tipado de perfil com empresa
+ * Re-exportar tipos para uso externo
  */
-export interface ProfileWithCompany extends Profile {
-  companies: Company | null;
-}
+export type {ProfileWithCompany, ContractWithServices};
 
 /**
  * Busca o perfil do usuário autenticado com sua empresa
@@ -73,8 +71,9 @@ export async function getUserProfile(): Promise<ErrorResult<ProfileWithCompany>>
       };
     }
 
+    // Type assertion seguro: Supabase retorna o tipo correto com join
     return {
-      data: profile as ProfileWithCompany,
+      data: profile as unknown as ProfileWithCompany,
       error: null,
       isError: false
     };
@@ -115,11 +114,11 @@ export async function getCompanyContracts(
 }
 
 /**
- * Busca todos os contratos de uma empresa (ativos e inativos)
+ * Busca todos os contratos de uma empresa (ativos e inativos) com serviços
  */
 export async function getAllCompanyContracts(
   companyId: string
-): Promise<ErrorResult<Contract[]>> {
+): Promise<ErrorResult<ContractWithServices[]>> {
   try {
     const supabase = await createServerComponentClient();
 
@@ -129,7 +128,9 @@ export async function getAllCompanyContracts(
       .eq("company_id", companyId)
       .order("signed_date", {ascending: false});
 
-    return handleSupabaseError({data, error});
+    // Type assertion: Supabase infere o tipo com join, mas precisamos garantir o tipo
+    const typedData = (data || []) as unknown as ContractWithServices[];
+    return handleSupabaseError({data: typedData, error});
   } catch (error) {
     return {
       data: null,

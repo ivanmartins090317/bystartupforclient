@@ -7,7 +7,9 @@ import {Button} from "@/components/ui/button";
 import {Download, Eye, FileText} from "lucide-react";
 import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
-import {Database} from "@/types/database.types";
+import type {ContractWithServices} from "@/lib/supabase/helpers";
+import type {StatusFilter} from "@/types";
+import {SERVICE_TYPE_LABELS} from "@/types";
 import {
   Select,
   SelectContent,
@@ -16,23 +18,19 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-type Contract = Database["public"]["Tables"]["contracts"]["Row"] & {
-  services: Database["public"]["Tables"]["services"]["Row"][];
-};
-
 interface ContractsListProps {
-  contracts: Contract[];
+  contracts: ContractWithServices[];
 }
 
-const serviceTypeLabels = {
-  assessoria: "Assessoria",
-  desenvolvimento: "Desenvolvimento",
-  landing_page: "Landing Page",
-  software: "Software"
-};
-
 export function ContractsList({contracts}: ContractsListProps) {
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  function handleStatusChange(value: string) {
+    // Type guard: só aceita valores válidos
+    if (value === "all" || value === "active" || value === "inactive") {
+      setStatusFilter(value);
+    }
+  }
 
   const filteredContracts = contracts.filter((contract) => {
     if (statusFilter === "all") return true;
@@ -61,7 +59,7 @@ export function ContractsList({contracts}: ContractsListProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Filtrar por:</span>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -128,7 +126,7 @@ export function ContractsList({contracts}: ContractsListProps) {
                   <div className="flex flex-wrap gap-1.5">
                     {contract.services.map((service) => (
                       <Badge key={service.id} variant="outline" className="text-xs">
-                        {serviceTypeLabels[service.type]}
+                        {SERVICE_TYPE_LABELS[service.type]}
                       </Badge>
                     ))}
                   </div>

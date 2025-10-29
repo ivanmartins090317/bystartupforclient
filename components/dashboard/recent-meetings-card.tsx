@@ -5,27 +5,14 @@ import {Calendar, Download, Eye, FileText} from "lucide-react";
 import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import Link from "next/link";
-import {Database} from "@/types/database.types";
-
-type Meeting = Database["public"]["Tables"]["meetings"]["Row"];
+import type {Meeting} from "@/types";
+import {DEPARTMENT_LABELS, MEETING_STATUS_LABELS} from "@/types";
 
 interface RecentMeetingsCardProps {
   meetings: Meeting[];
 }
 
-const departmentLabels = {
-  comercial: "Comercial",
-  tecnologia: "Tecnologia",
-  marketing: "Marketing"
-};
-
-const statusLabels = {
-  scheduled: "Agendada",
-  completed: "Concluída",
-  cancelled: "Cancelada"
-};
-
-const statusColors = {
+const statusColors: Record<string, string> = {
   scheduled: "bg-blue-100 text-blue-700",
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700"
@@ -62,10 +49,10 @@ export function RecentMeetingsCard({meetings}: RecentMeetingsCardProps) {
                   </h4>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge variant="outline" className="text-xs">
-                      {departmentLabels[meeting.department]}
+                      {DEPARTMENT_LABELS[meeting.department]}
                     </Badge>
                     <Badge className={`text-xs ${statusColors[meeting.status]}`}>
-                      {statusLabels[meeting.status]}
+                      {MEETING_STATUS_LABELS[meeting.status]}
                     </Badge>
                   </div>
                   <p className="text-xs text-gray-600 mt-1">

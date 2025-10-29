@@ -6,10 +6,8 @@ import {Badge} from "@/components/ui/badge";
 import {Headphones, Play, Video} from "lucide-react";
 import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
-import {Database} from "@/types/database.types";
+import type {Insight, InsightType} from "@/types";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-
-type Insight = Database["public"]["Tables"]["insights"]["Row"];
 
 interface InsightsGridProps {
   insights: Insight[];
@@ -72,7 +70,11 @@ export function InsightsGrid({insights}: InsightsGridProps) {
   );
 }
 
-function InsightCard({insight}: {insight: Insight}) {
+interface InsightCardProps {
+  insight: Insight;
+}
+
+function InsightCard({insight}: InsightCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
 
   function formatDuration(seconds: number) {
@@ -176,7 +178,11 @@ function InsightCard({insight}: {insight: Insight}) {
   );
 }
 
-function EmptyState({type}: {type?: "podcast" | "video"}) {
+interface EmptyStateProps {
+  type?: InsightType;
+}
+
+function EmptyState({type}: EmptyStateProps) {
   const Icon = type === "podcast" ? Headphones : type === "video" ? Video : Headphones;
   const message = type
     ? `Nenhum ${type === "podcast" ? "podcast" : "vídeo"} disponível no momento`

@@ -13,17 +13,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {LogOut, User, Settings} from "lucide-react";
 import {toast} from "sonner";
+import type {ProfileWithCompany} from "@/lib/supabase/helpers";
 
 interface DashboardHeaderProps {
-  profile: {
-    full_name: string;
-    email: string;
-    avatar_url: string | null;
-    companies: {
-      name: string;
-      logo_url: string | null;
-    } | null;
-  };
+  profile: ProfileWithCompany;
 }
 
 export function DashboardHeader({profile}: DashboardHeaderProps) {

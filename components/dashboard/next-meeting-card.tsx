@@ -3,21 +3,14 @@ import {Badge} from "@/components/ui/badge";
 import {Calendar, Clock, Users} from "lucide-react";
 import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
-import {Database} from "@/types/database.types";
-
-type Meeting = Database["public"]["Tables"]["meetings"]["Row"];
+import type {Meeting} from "@/types";
+import {DEPARTMENT_LABELS} from "@/types";
 
 interface NextMeetingCardProps {
   meeting: Meeting | null;
 }
 
-const departmentLabels = {
-  comercial: "Comercial",
-  tecnologia: "Tecnologia",
-  marketing: "Marketing"
-};
-
-const departmentColors = {
+const departmentColors: Record<string, string> = {
   comercial: "bg-blue-100 text-blue-700",
   tecnologia: "bg-purple-100 text-purple-700",
   marketing: "bg-pink-100 text-pink-700"
@@ -61,7 +54,7 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
           </h3>
           <Badge className={departmentColors[meeting.department]}>
             <Users className="h-3 w-3 mr-1" />
-            {departmentLabels[meeting.department]}
+            {DEPARTMENT_LABELS[meeting.department]}
           </Badge>
         </div>
 

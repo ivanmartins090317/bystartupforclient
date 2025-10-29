@@ -7,7 +7,8 @@ import {Button} from "@/components/ui/button";
 import {Calendar, Clock, Download, Eye, Users} from "lucide-react";
 import {format, isFuture, isPast, isToday} from "date-fns";
 import {ptBR} from "date-fns/locale";
-import {Database} from "@/types/database.types";
+import type {Meeting, DepartmentFilter, PeriodFilter} from "@/types";
+import {DEPARTMENT_LABELS, MEETING_STATUS_LABELS} from "@/types";
 import {
   Select,
   SelectContent,
@@ -16,39 +17,47 @@ import {
   SelectValue
 } from "@/components/ui/select";
 
-type Meeting = Database["public"]["Tables"]["meetings"]["Row"];
-
 interface MeetingsListProps {
   meetings: Meeting[];
 }
 
-const departmentLabels = {
-  comercial: "Comercial",
-  tecnologia: "Tecnologia",
-  marketing: "Marketing"
-};
-
-const departmentColors = {
+const departmentColors: Record<string, string> = {
   comercial: "bg-blue-100 text-blue-700",
   tecnologia: "bg-purple-100 text-purple-700",
   marketing: "bg-pink-100 text-pink-700"
 };
 
-const statusLabels = {
-  scheduled: "Agendada",
-  completed: "Concluída",
-  cancelled: "Cancelada"
-};
-
-const statusColors = {
+const statusColors: Record<string, string> = {
   scheduled: "bg-blue-100 text-blue-700",
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700"
 };
 
 export function MeetingsList({meetings}: MeetingsListProps) {
-  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
-  const [periodFilter, setPeriodFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<DepartmentFilter>("all");
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("all");
+
+  function handleDepartmentChange(value: string) {
+    if (
+      value === "all" ||
+      value === "comercial" ||
+      value === "tecnologia" ||
+      value === "marketing"
+    ) {
+      setDepartmentFilter(value);
+    }
+  }
+
+  function handlePeriodChange(value: string) {
+    if (
+      value === "all" ||
+      value === "today" ||
+      value === "upcoming" ||
+      value === "past"
+    ) {
+      setPeriodFilter(value);
+    }
+  }
 
   const filteredMeetings = meetings.filter((meeting) => {
     const meetingDate = new Date(meeting.meeting_date);
@@ -100,7 +109,7 @@ export function MeetingsList({meetings}: MeetingsListProps) {
     <div className="space-y-6">
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
-        <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
+        <Select value={departmentFilter} onValueChange={handleDepartmentChange}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Departamento" />
           </SelectTrigger>
@@ -112,7 +121,7 @@ export function MeetingsList({meetings}: MeetingsListProps) {
           </SelectContent>
         </Select>
 
-        <Select value={periodFilter} onValueChange={setPeriodFilter}>
+        <Select value={periodFilter} onValueChange={handlePeriodChange}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Período" />
           </SelectTrigger>
@@ -164,7 +173,11 @@ export function MeetingsList({meetings}: MeetingsListProps) {
   );
 }
 
-function MeetingCard({meeting}: {meeting: Meeting}) {
+interface MeetingCardProps {
+  meeting: Meeting;
+}
+
+function MeetingCard({meeting}: MeetingCardProps) {
   const meetingDate = new Date(meeting.meeting_date);
   const isUpcoming = isFuture(meetingDate) || isToday(meetingDate);
 
@@ -181,10 +194,10 @@ function MeetingCard({meeting}: {meeting: Meeting}) {
               <div className="flex flex-wrap gap-2">
                 <Badge className={departmentColors[meeting.department]}>
                   <Users className="h-3 w-3 mr-1" />
-                  {departmentLabels[meeting.department]}
+                  {DEPARTMENT_LABELS[meeting.department]}
                 </Badge>
                 <Badge className={statusColors[meeting.status]}>
-                  {statusLabels[meeting.status]}
+                  {MEETING_STATUS_LABELS[meeting.status]}
                 </Badge>
               </div>
             </div>

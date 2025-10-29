@@ -1,23 +1,15 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Briefcase, Package} from "lucide-react";
-import {Database} from "@/types/database.types";
-
-type Service = Database["public"]["Tables"]["services"]["Row"];
+import type {Service} from "@/types";
+import {SERVICE_TYPE_LABELS} from "@/types";
 
 interface ContractServicesCardProps {
   services: Service[];
   contractTitle?: string;
 }
 
-const serviceTypeLabels = {
-  assessoria: "Assessoria",
-  desenvolvimento: "Desenvolvimento",
-  landing_page: "Landing Page",
-  software: "Software"
-};
-
-const serviceTypeColors = {
+const serviceTypeColors: Record<string, string> = {
   assessoria: "bg-blue-100 text-blue-700",
   desenvolvimento: "bg-purple-100 text-purple-700",
   landing_page: "bg-green-100 text-green-700",
@@ -52,7 +44,7 @@ export function ContractServicesCard({
                     {service.name}
                   </h4>
                   <Badge className={`text-xs ${serviceTypeColors[service.type]}`}>
-                    {serviceTypeLabels[service.type]}
+                    {SERVICE_TYPE_LABELS[service.type]}
                   </Badge>
                 </div>
                 {service.description && (
