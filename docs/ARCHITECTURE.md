@@ -436,6 +436,67 @@ try {
    - Menor uso de banda e memória
    - Melhor escalabilidade
 
+8. **Loading States com Skeleton Loaders** ⚡ (NOVO)
+
+   **Decisão:** Implementar skeleton loaders usando arquivos `loading.tsx` nativos do Next.js App Router.
+
+   **Por quê?**
+
+   - Melhora percepção de performance (feedback visual imediato)
+   - Reduz sensação de "app travado" durante carregamento
+   - Melhor UX profissional e moderna
+   - Skeletons seguem o layout real, evitando layout shift
+
+   **Como funciona:**
+
+   O Next.js App Router exibe automaticamente arquivos `loading.tsx` durante:
+
+   - Navegação entre rotas
+   - Carregamento de dados em Server Components
+   - Streaming de conteúdo
+
+   **Componentes Criados:**
+
+   ```typescript
+   // components/shared/loading-skeletons.tsx
+   export function DashboardSkeleton() {
+     return (
+       <div className="space-y-6">
+         <WelcomeCardSkeleton />
+         <div className="grid gap-6 md:grid-cols-2">
+           <MeetingCardSkeleton />
+           <ContractsOverviewSkeleton />
+         </div>
+         // ... mais skeletons
+       </div>
+     );
+   }
+   ```
+
+   **Skeletons Implementados:**
+
+   - `WelcomeCardSkeleton` - Card de boas-vindas
+   - `MeetingCardSkeleton` - Card de reunião
+   - `ContractsOverviewSkeleton` - Overview de contratos
+   - `RecentMeetingsCardSkeleton` - Lista de reuniões recentes
+   - `ServicesCardSkeleton` - Card de serviços
+   - `DashboardSkeleton` - Skeleton completo do dashboard
+
+   **Arquivos loading.tsx:**
+
+   - `app/(dashboard)/dashboard/loading.tsx` - Loading do dashboard
+   - `app/(dashboard)/contratos/loading.tsx` - Loading de contratos
+   - `app/(dashboard)/reunioes/loading.tsx` - Loading de reuniões
+   - `app/(dashboard)/insights/loading.tsx` - Loading de insights
+
+   **Benefícios:**
+
+   - Feedback visual imediato durante carregamento
+   - Melhor percepção de performance pelo usuário
+   - UX mais polida e profissional
+   - Reduz sensação de "app travado"
+   - Layout consistente (skeletons seguem estrutura real)
+
 ### Métricas de Performance
 
 | Métrica                        | Target | Atual | Melhoria com Otimizações     |
@@ -461,7 +522,7 @@ try {
 
 ### Melhorias Planejadas
 
-- [ ] Skeleton loaders (loading states)
+- [x] Skeleton loaders (loading states) ✅
 - [ ] Empty states melhorados
 - [ ] Validação de forms com Zod
 - [ ] Performance monitoring (Sentry)
@@ -530,4 +591,4 @@ Para dúvidas sobre arquitetura ou decisões técnicas, consulte a documentaçã
 
 ---
 
-_Última atualização: Implementação de otimizações de queries (seleções específicas)_
+_Última atualização: Implementação de skeleton loaders (loading states)_
