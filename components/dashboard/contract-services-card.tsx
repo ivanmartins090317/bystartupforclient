@@ -3,6 +3,7 @@ import {Badge} from "@/components/ui/badge";
 import {Briefcase, Package} from "lucide-react";
 import type {Service} from "@/types";
 import {SERVICE_TYPE_LABELS} from "@/types";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface ContractServicesCardProps {
   services: Service[];
@@ -31,10 +32,13 @@ export function ContractServicesCard({
       </CardHeader>
       <CardContent>
         {services.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <Package className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">Nenhum serviço ativo</p>
-          </div>
+          <EmptyState
+            icon={Package}
+            title="Nenhum serviço ativo"
+            description="Os serviços do seu contrato aparecerão aqui"
+            variant="compact"
+            withCard={false}
+          />
         ) : (
           <div className="space-y-3">
             {services.map((service) => (

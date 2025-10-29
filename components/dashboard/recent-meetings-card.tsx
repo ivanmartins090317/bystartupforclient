@@ -1,12 +1,13 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {Calendar, Download, Eye, FileText} from "lucide-react";
+import {Calendar, Download, Eye} from "lucide-react";
 import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import Link from "next/link";
 import type {Meeting} from "@/types";
 import {DEPARTMENT_LABELS, MEETING_STATUS_LABELS} from "@/types";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface RecentMeetingsCardProps {
   meetings: Meeting[];
@@ -32,10 +33,13 @@ export function RecentMeetingsCard({meetings}: RecentMeetingsCardProps) {
       </CardHeader>
       <CardContent>
         {meetings.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">Nenhuma reunião registrada</p>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="Nenhuma reunião registrada"
+            description="Suas reuniões recentes aparecerão aqui"
+            variant="compact"
+            withCard={false}
+          />
         ) : (
           <div className="space-y-3">
             {meetings.map((meeting) => (

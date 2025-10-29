@@ -5,6 +5,7 @@ import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import type {Meeting} from "@/types";
 import {DEPARTMENT_LABELS} from "@/types";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface NextMeetingCardProps {
   meeting: Meeting | null;
@@ -27,11 +28,13 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-gray-500">
-            <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">Nenhuma reunião agendada</p>
-            <p className="text-sm mt-1">Entre em contato para agendar</p>
-          </div>
+          <EmptyState
+            icon={Calendar}
+            title="Nenhuma reunião agendada"
+            description="Entre em contato com nossa equipe para agendar uma reunião"
+            variant="compact"
+            withCard={false}
+          />
         </CardContent>
       </Card>
     );

@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface ContractsListProps {
   contracts: ContractWithServices[];
@@ -39,17 +40,16 @@ export function ContractsList({contracts}: ContractsListProps) {
 
   if (contracts.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <FileText className="h-16 w-16 text-gray-300 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Nenhum contrato encontrado
-          </h3>
-          <p className="text-gray-600 text-center max-w-md">
-            Entre em contato com nossa equipe para iniciar um novo projeto
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={FileText}
+        title="Nenhum contrato encontrado"
+        description="Entre em contato com nossa equipe para iniciar um novo projeto ou esclarecer dúvidas sobre seus contratos."
+        action={{
+          label: "Entrar em contato",
+          href: "#",
+          variant: "outline"
+        }}
+      />
     );
   }
 

@@ -497,6 +497,89 @@ try {
    - Reduz sensação de "app travado"
    - Layout consistente (skeletons seguem estrutura real)
 
+9. **Empty States Padronizados** ✨ (NOVO)
+
+   **Decisão:** Criar componente reutilizável `EmptyState` para padronizar a exibição quando não há dados para mostrar.
+
+   **Por quê?**
+
+   - Melhora significativamente a experiência do usuário (UX)
+   - Evita confusão quando não há dados (vs. erro/bug)
+   - Comunicação clara com mensagens contextuais
+   - Consistência visual em todo o sistema
+   - Orientação através de ações opcionais (botões)
+
+   **Componente Criado:**
+
+   ```typescript
+   // components/shared/empty-state.tsx
+   export function EmptyState({
+     icon, // Ícone Lucide Icon
+     title, // Título principal
+     description, // Descrição opcional
+     action, // Ação opcional (botão/link)
+     variant, // "default" | "compact"
+     withCard // Renderizar dentro de Card?
+   }: EmptyStateProps);
+   ```
+
+   **Variantes:**
+
+   - **`default`**: Para páginas completas (ícone 16x16, padding maior)
+   - **`compact`**: Para cards pequenos (ícone 12x12, padding menor)
+
+   **Características:**
+
+   - Ícone visual contextual (FileText, Calendar, Package, etc.)
+   - Título descritivo e claro
+   - Descrição opcional com contexto
+   - Ação opcional (botão para próximos passos)
+   - Flexível: pode renderizar com ou sem Card
+
+   **Exemplos de Uso:**
+
+   ```typescript
+   // Empty state completo com ação
+   <EmptyState
+     icon={FileText}
+     title="Nenhum contrato encontrado"
+     description="Entre em contato com nossa equipe para iniciar um novo projeto."
+     action={{
+       label: "Entrar em contato",
+       href: "#",
+       variant: "outline"
+     }}
+   />
+
+   // Empty state compacto para cards
+   <EmptyState
+     icon={Calendar}
+     title="Nenhuma reunião agendada"
+     description="Entre em contato para agendar"
+     variant="compact"
+     withCard={false}
+   />
+   ```
+
+   **Componentes Refatorados:**
+
+   - `contracts-list.tsx` - Empty state quando não há contratos
+   - `meetings-list.tsx` - Empty states (sem reuniões + filtros)
+   - `next-meeting-card.tsx` - Quando não há próxima reunião
+   - `recent-meetings-card.tsx` - Quando não há reuniões recentes
+   - `contract-services-card.tsx` - Quando não há serviços
+   - `contracts-overview-card.tsx` - Quando não há contratos
+   - `insights-grid.tsx` - Quando não há insights/podcasts/vídeos
+
+   **Benefícios:**
+
+   - **UX Melhorada:** Usuário entende claramente o estado e o que fazer
+   - **Consistência Visual:** Mesmo padrão em todo o sistema
+   - **Orientação Clara:** Ações sugeridas guiam o usuário
+   - **Manutenibilidade:** Código centralizado e fácil de atualizar
+   - **Profissionalismo:** Interface polida e bem estruturada
+   - **Escalabilidade:** Fácil adicionar novos empty states no futuro
+
 ### Métricas de Performance
 
 | Métrica                        | Target | Atual | Melhoria com Otimizações     |
@@ -523,7 +606,7 @@ try {
 ### Melhorias Planejadas
 
 - [x] Skeleton loaders (loading states) ✅
-- [ ] Empty states melhorados
+- [x] Empty states melhorados ✅
 - [ ] Validação de forms com Zod
 - [ ] Performance monitoring (Sentry)
 - [ ] Error tracking
@@ -591,4 +674,4 @@ Para dúvidas sobre arquitetura ou decisões técnicas, consulte a documentaçã
 
 ---
 
-_Última atualização: Implementação de skeleton loaders (loading states)_
+_Última atualização: Implementação de empty states padronizados_

@@ -8,6 +8,7 @@ import {format} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import type {Insight, InsightType} from "@/types";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface InsightsGridProps {
   insights: Insight[];
@@ -33,7 +34,7 @@ export function InsightsGrid({insights}: InsightsGridProps) {
 
       <TabsContent value="all" className="space-y-4">
         {insights.length === 0 ? (
-          <EmptyState />
+          <InsightsEmptyState />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {insights.map((insight) => (
@@ -45,7 +46,7 @@ export function InsightsGrid({insights}: InsightsGridProps) {
 
       <TabsContent value="podcasts" className="space-y-4">
         {podcasts.length === 0 ? (
-          <EmptyState type="podcast" />
+          <InsightsEmptyState type="podcast" />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {podcasts.map((insight) => (
@@ -57,7 +58,7 @@ export function InsightsGrid({insights}: InsightsGridProps) {
 
       <TabsContent value="videos" className="space-y-4">
         {videos.length === 0 ? (
-          <EmptyState type="video" />
+          <InsightsEmptyState type="video" />
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {videos.map((insight) => (
@@ -178,25 +179,21 @@ function InsightCard({insight}: InsightCardProps) {
   );
 }
 
-interface EmptyStateProps {
+interface InsightsEmptyStateProps {
   type?: InsightType;
 }
 
-function EmptyState({type}: EmptyStateProps) {
+function InsightsEmptyState({type}: InsightsEmptyStateProps) {
   const Icon = type === "podcast" ? Headphones : type === "video" ? Video : Headphones;
   const message = type
     ? `Nenhum ${type === "podcast" ? "podcast" : "vídeo"} disponível no momento`
     : "Nenhum insight disponível no momento";
 
   return (
-    <Card>
-      <CardContent className="flex flex-col items-center justify-center py-12">
-        <Icon className="h-16 w-16 text-gray-300 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">{message}</h3>
-        <p className="text-gray-600 text-center max-w-md">
-          Nossa equipe está trabalhando em novos conteúdos exclusivos para você
-        </p>
-      </CardContent>
-    </Card>
+    <EmptyState
+      icon={Icon}
+      title={message}
+      description="Nossa equipe está trabalhando em novos conteúdos exclusivos para você"
+    />
   );
 }

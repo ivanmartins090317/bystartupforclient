@@ -4,6 +4,7 @@ import {Button} from "@/components/ui/button";
 import {FileText, ArrowRight} from "lucide-react";
 import Link from "next/link";
 import type {Contract} from "@/types";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface ContractsOverviewCardProps {
   contracts: Contract[];
@@ -30,10 +31,13 @@ export function ContractsOverviewCard({
       </CardHeader>
       <CardContent>
         {contracts.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">Nenhum contrato ativo</p>
-          </div>
+          <EmptyState
+            icon={FileText}
+            title="Nenhum contrato ativo"
+            description="Seus contratos aparecerão aqui"
+            variant="compact"
+            withCard={false}
+          />
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">

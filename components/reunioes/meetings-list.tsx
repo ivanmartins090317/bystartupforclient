@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import {EmptyState} from "@/components/shared/empty-state";
 
 interface MeetingsListProps {
   meetings: Meeting[];
@@ -91,17 +92,16 @@ export function MeetingsList({meetings}: MeetingsListProps) {
 
   if (meetings.length === 0) {
     return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Calendar className="h-16 w-16 text-gray-300 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Nenhuma reunião encontrada
-          </h3>
-          <p className="text-gray-600 text-center max-w-md">
-            Entre em contato para agendar uma reunião com nossa equipe
-          </p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={Calendar}
+        title="Nenhuma reunião encontrada"
+        description="Entre em contato com nossa equipe para agendar uma reunião e alinhar próximos passos do seu projeto."
+        action={{
+          label: "Solicitar reunião",
+          href: "#",
+          variant: "outline"
+        }}
+      />
     );
   }
 
@@ -163,11 +163,12 @@ export function MeetingsList({meetings}: MeetingsListProps) {
       )}
 
       {filteredMeetings.length === 0 && (
-        <Card>
-          <CardContent className="py-12 text-center text-gray-600">
-            <p>Nenhuma reunião encontrada com os filtros selecionados</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Calendar}
+          title="Nenhuma reunião encontrada"
+          description="Nenhuma reunião corresponde aos filtros selecionados. Tente ajustar os filtros ou entre em contato para agendar uma nova reunião."
+          variant="default"
+        />
       )}
     </div>
   );
