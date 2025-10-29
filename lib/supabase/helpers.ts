@@ -43,10 +43,12 @@ export async function getUserProfile(): Promise<ErrorResult<ProfileWithCompany>>
       redirect("/login");
     }
 
-    // 2. Buscar perfil com join na empresa
+    // 2. Buscar perfil com join na empresa (apenas campos necessários)
     const {data: profile, error: profileError} = await supabase
       .from("profiles")
-      .select("*, companies(*)")
+      .select(
+        "id, email, full_name, avatar_url, company_id, role, created_at, updated_at, companies(id, name, logo_url)"
+      )
       .eq("id", user.id)
       .single();
 
@@ -98,7 +100,9 @@ export async function getCompanyContracts(
 
     const {data, error} = await supabase
       .from("contracts")
-      .select("*")
+      .select(
+        "id, company_id, contract_number, title, description, signed_date, status, contract_file_url, created_at, updated_at"
+      )
       .eq("company_id", companyId)
       .eq("status", "active")
       .order("signed_date", {ascending: false});
@@ -124,7 +128,9 @@ export async function getAllCompanyContracts(
 
     const {data, error} = await supabase
       .from("contracts")
-      .select("*, services(*)")
+      .select(
+        "id, company_id, contract_number, title, description, signed_date, status, contract_file_url, created_at, updated_at, services(id, contract_id, name, description, type, created_at)"
+      )
       .eq("company_id", companyId)
       .order("signed_date", {ascending: false});
 
@@ -186,7 +192,9 @@ export async function getNextMeeting(
 
     const {data, error} = await supabase
       .from("meetings")
-      .select("*")
+      .select(
+        "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
+      )
       .in("contract_id", contractIds)
       .eq("status", "scheduled")
       .gte("meeting_date", new Date().toISOString())
@@ -219,7 +227,9 @@ export async function getRecentMeetings(
 
     const {data, error} = await supabase
       .from("meetings")
-      .select("*")
+      .select(
+        "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
+      )
       .in("contract_id", contractIds)
       .in("status", ["completed", "scheduled"])
       .order("meeting_date", {ascending: false})
@@ -246,7 +256,7 @@ export async function getContractServices(
 
     const {data, error} = await supabase
       .from("services")
-      .select("*")
+      .select("id, contract_id, name, description, type, created_at")
       .eq("contract_id", contractId)
       .order("created_at", {ascending: false});
 
@@ -275,7 +285,9 @@ export async function getMeetingsByContracts(
 
     const {data, error} = await supabase
       .from("meetings")
-      .select("*")
+      .select(
+        "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
+      )
       .in("contract_id", contractIds)
       .order("meeting_date", {ascending: false});
 
@@ -299,7 +311,11 @@ export async function getInsights(
     const supabase = await createServerComponentClient();
 
     // Insights podem ser globais (contract_id = null) ou específicos
-    let query = supabase.from("insights").select("*");
+    let query = supabase
+      .from("insights")
+      .select(
+        "id, contract_id, title, description, type, media_url, thumbnail_url, duration, published_at, created_at"
+      );
 
     if (contractIds.length > 0) {
       query = query.or(`contract_id.is.null,contract_id.in.(${contractIds.join(",")})`);
