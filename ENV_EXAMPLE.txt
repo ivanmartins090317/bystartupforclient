@@ -1,0 +1,17 @@
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://xwoujfiscqcorgjbnoqj.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3b3VqZmlzY3Fjb3JnamJub3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE2NTE3MDcsImV4cCI6MjA3NzIyNzcwN30.FrmaUiuUPgtOTd7U1TnePBFMh1mUce_1M6Rt5BVBoXs
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh3b3VqZmlzY3Fjb3JnamJub3FqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MTY1MTcwNywiZXhwIjoyMDc3MjI3NzA3fQ.rkGxN1wkyUmvh3NbojJLeo21YsNdl_QUHrQappsIVHo
+
+# Google Calendar API (Opcional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
+
+# Application
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# WhatsApp & Support
+NEXT_PUBLIC_WHATSAPP_NUMBER=5513999999999
+NEXT_PUBLIC_SUPPORT_PHONE=08007841414
+
