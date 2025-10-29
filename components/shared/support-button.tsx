@@ -9,29 +9,45 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import {Input} from "@/components/ui/input";
-import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
 import {MessageCircle, Phone, Send, X} from "lucide-react";
 import {toast} from "sonner";
 import {createClient} from "@/lib/supabase/client";
-import {useUserStore} from "@/lib/stores/user-store";
+import {useForm} from "react-hook-form";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {supportRequestSchema, type SupportRequestFormData} from "@/lib/validations";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from "@/components/ui/form";
+import {Input} from "@/components/ui/input";
+import {Textarea} from "@/components/ui/textarea";
 
 export function SupportButton() {
-  const [isOpen, setIsOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
+
+  const form = useForm<SupportRequestFormData>({
+    resolver: zodResolver(supportRequestSchema),
+    defaultValues: {
+      subject: "",
+      message: ""
+    }
+  });
+
+  const {
+    handleSubmit,
+    reset,
+    formState: {isSubmitting}
+  } = form;
 
   const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "5513999999999";
   const phoneNumber = process.env.NEXT_PUBLIC_SUPPORT_PHONE || "08007841414";
 
-  async function handleSubmitRequest(e: React.FormEvent) {
-    e.preventDefault();
-    setIsSubmitting(true);
-
+  async function onSubmit(data: SupportRequestFormData) {
     try {
       const supabase = createClient();
       const {
@@ -57,8 +73,8 @@ export function SupportButton() {
       const {error} = await supabase.from("support_requests").insert({
         company_id: profile.company_id,
         user_id: user.id,
-        subject,
-        message,
+        subject: data.subject,
+        message: data.message,
         status: "open"
       });
 
@@ -71,15 +87,12 @@ export function SupportButton() {
         description: "Nossa equipe entrará em contato em breve."
       });
 
-      setSubject("");
-      setMessage("");
+      reset();
       setIsDialogOpen(false);
       setShowMenu(false);
     } catch (error) {
       toast.error("Erro inesperado ao enviar solicitação");
       console.error(error);
-    } finally {
-      setIsSubmitting(false);
     }
   }
 
@@ -141,51 +154,68 @@ export function SupportButton() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSubmitRequest} className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="subject">Assunto</Label>
-              <Input
-                id="subject"
-                placeholder="Ex: Dúvida sobre contrato"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                required
-                disabled={isSubmitting}
+          <Form {...form}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-4">
+              <FormField
+                control={form.control}
+                name="subject"
+                render={({field}) => (
+                  <FormItem>
+                    <FormLabel>Assunto</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Ex: Dúvida sobre contrato"
+                        disabled={isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="message">Mensagem</Label>
-              <Textarea
-                id="message"
-                placeholder="Descreva sua solicitação..."
-                rows={5}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                required
-                disabled={isSubmitting}
+              <FormField
+                control={form.control}
+                name="message"
+                render={({field}) => (
+                  <FormItem>
+                    <FormLabel>Mensagem</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Descreva sua solicitação..."
+                        rows={5}
+                        disabled={isSubmitting}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1"
-                onClick={() => setIsDialogOpen(false)}
-                disabled={isSubmitting}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-secondary-500 hover:bg-secondary-600"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
-              </Button>
-            </div>
-          </form>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    reset();
+                    setIsDialogOpen(false);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 bg-secondary-500 hover:bg-secondary-600"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Enviando..." : "Enviar Solicitação"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </>

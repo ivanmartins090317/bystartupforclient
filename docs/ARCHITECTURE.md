@@ -77,6 +77,7 @@ lib/
 ├── supabase/       # Clients Supabase (server, client, middleware)
 │   ├── helpers.ts  # Funções auxiliares de queries
 │   └── errors.ts   # Tratamento de erros centralizado
+├── validations.ts  # Schemas Zod para validação de formulários
 └── stores/         # Zustand stores (se necessário)
 
 types/
@@ -217,7 +218,7 @@ export default async function DashboardPage() {
 ### Validação
 
 - Inputs validados com TypeScript
-- Sanitização no servidor (futuro: Zod)
+- **Validação de formulários com Zod** ✅ (implementado)
 - Proteção contra SQL Injection (Supabase)
 
 ---
@@ -580,6 +581,102 @@ try {
    - **Profissionalismo:** Interface polida e bem estruturada
    - **Escalabilidade:** Fácil adicionar novos empty states no futuro
 
+10. **Validação de Formulários com Zod** ✨ (NOVO)
+
+    **Decisão:** Implementar validação type-safe de formulários usando Zod + react-hook-form.
+
+    **Por quê?**
+
+- Validação robusta e type-safe (TypeScript inferido dos schemas)
+- Mensagens de erro consistentes em português
+- Validação em tempo real (onBlur/onChange)
+- Menos código boilerplate (vs. useState manual)
+- Reutilização de schemas centralizados
+- Preparado para validação no backend (futuro)
+
+**Tecnologias:**
+
+- **Zod** - Schema validation library
+- **react-hook-form** - Form state management
+- **@hookform/resolvers** - Integração Zod + react-hook-form
+- **Shadcn Form** - Componentes UI integrados
+
+**Schemas Criados:**
+
+```typescript
+// lib/validations.ts
+export const loginSchema = z.object({
+  email: z.string().min(1, "Email é obrigatório").email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres")
+});
+
+export const supportRequestSchema = z.object({
+  subject: z.string().min(3).max(100),
+  message: z.string().min(10).max(1000)
+});
+```
+
+**Validações Implementadas:**
+
+**Login:**
+
+- Email obrigatório e formato válido
+- Senha mínimo 6 caracteres
+- Email automaticamente normalizado (lowercase + trim)
+
+**Solicitação de Suporte:**
+
+- Assunto: 3-100 caracteres (trimado)
+- Mensagem: 10-1000 caracteres (trimado)
+
+**Formulários Refatorados:**
+
+- `components/auth/login-form.tsx` - Validação completa de login
+- `components/shared/support-button.tsx` - Validação do formulário de suporte
+
+**Exemplo de Uso:**
+
+```typescript
+const form = useForm<LoginFormData>({
+  resolver: zodResolver(loginSchema),
+  defaultValues: {email: "", password: ""}
+});
+
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)}>
+    <FormField
+      control={form.control}
+      name="email"
+      render={({field}) => (
+        <FormItem>
+          <FormLabel>Email</FormLabel>
+          <FormControl>
+            <Input {...field} />
+          </FormControl>
+          <FormMessage /> {/* Mensagens de erro automáticas */}
+        </FormItem>
+      )}
+    />
+  </form>
+</Form>;
+```
+
+**Benefícios:**
+
+- **Type Safety:** Tipos inferidos automaticamente dos schemas
+- **UX Melhorada:** Validação em tempo real com feedback imediato
+- **Consistência:** Mensagens de erro padronizadas em português
+- **Manutenibilidade:** Schemas centralizados e reutilizáveis
+- **Performance:** Validação otimizada do react-hook-form
+- **Escalabilidade:** Fácil adicionar novos formulários e validações
+
+**Próximos Passos (Futuro):**
+
+- Validação no servidor usando os mesmos schemas Zod
+- Validação de upload de arquivos
+- Validação condicional complexa
+- Integração com API routes para validação server-side
+
 ### Métricas de Performance
 
 | Métrica                        | Target | Atual | Melhoria com Otimizações     |
@@ -607,10 +704,10 @@ try {
 
 - [x] Skeleton loaders (loading states) ✅
 - [x] Empty states melhorados ✅
-- [ ] Validação de forms com Zod
-- [ ] Performance monitoring (Sentry)
-- [ ] Error tracking
-- [ ] A/B testing framework
+- [x] Validação de forms com Zod ✅
+- [ ] Performance monitoring (Sentry) - Requer configuração externa
+- [ ] Error tracking - Requer serviço externo (Sentry/LogRocket)
+- [ ] A/B testing framework - Requer estrutura de analytics
 
 ---
 
@@ -674,4 +771,4 @@ Para dúvidas sobre arquitetura ou decisões técnicas, consulte a documentaçã
 
 ---
 
-_Última atualização: Implementação de empty states padronizados_
+_Última atualização: Implementação de validação de formulários com Zod_
