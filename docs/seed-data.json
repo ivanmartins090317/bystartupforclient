@@ -1,0 +1,306 @@
+{
+  "companies": [
+    {
+      "id": "c1111111-1111-1111-1111-111111111111",
+      "name": "TechCorp Solutions",
+      "logo_url": "https://via.placeholder.com/200x80/34372e/e6e730?text=TechCorp",
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "c2222222-2222-2222-2222-222222222222",
+      "name": "InnovateHub Brasil",
+      "logo_url": "https://via.placeholder.com/200x80/34372e/e6e730?text=InnovateHub",
+      "created_at": "2024-02-20T10:00:00Z",
+      "updated_at": "2024-02-20T10:00:00Z"
+    }
+  ],
+  "profiles": [
+    {
+      "id": "u1111111-1111-1111-1111-111111111111",
+      "email": "cliente@techcorp.com",
+      "full_name": "João Silva",
+      "avatar_url": null,
+      "company_id": "c1111111-1111-1111-1111-111111111111",
+      "role": "client",
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "u2222222-2222-2222-2222-222222222222",
+      "email": "maria@innovatehub.com",
+      "full_name": "Maria Santos",
+      "avatar_url": null,
+      "company_id": "c2222222-2222-2222-2222-222222222222",
+      "role": "client",
+      "created_at": "2024-02-20T10:00:00Z",
+      "updated_at": "2024-02-20T10:00:00Z"
+    },
+    {
+      "id": "u3333333-3333-3333-3333-333333333333",
+      "email": "admin@bystartup.com",
+      "full_name": "Admin ByStartup",
+      "avatar_url": null,
+      "company_id": "c1111111-1111-1111-1111-111111111111",
+      "role": "admin",
+      "created_at": "2024-01-01T10:00:00Z",
+      "updated_at": "2024-01-01T10:00:00Z"
+    }
+  ],
+  "contracts": [
+    {
+      "id": "ct111111-1111-1111-1111-111111111111",
+      "company_id": "c1111111-1111-1111-1111-111111111111",
+      "contract_number": "BS-2024-001",
+      "title": "Desenvolvimento de Plataforma E-commerce",
+      "description": "Desenvolvimento completo de plataforma e-commerce com integração de pagamentos e gestão de estoque",
+      "signed_date": "2024-01-15",
+      "status": "active",
+      "contract_file_url": null,
+      "created_at": "2024-01-15T10:00:00Z",
+      "updated_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "ct222222-2222-2222-2222-222222222222",
+      "company_id": "c1111111-1111-1111-1111-111111111111",
+      "contract_number": "BS-2024-002",
+      "title": "Assessoria de Marketing Digital",
+      "description": "Consultoria mensal de marketing digital e gestão de redes sociais",
+      "signed_date": "2024-03-01",
+      "status": "active",
+      "contract_file_url": null,
+      "created_at": "2024-03-01T10:00:00Z",
+      "updated_at": "2024-03-01T10:00:00Z"
+    },
+    {
+      "id": "ct333333-3333-3333-3333-333333333333",
+      "company_id": "c2222222-2222-2222-2222-222222222222",
+      "contract_number": "BS-2024-003",
+      "title": "Desenvolvimento de Landing Page",
+      "description": "Criação de landing page responsiva para captação de leads",
+      "signed_date": "2024-02-20",
+      "status": "active",
+      "contract_file_url": null,
+      "created_at": "2024-02-20T10:00:00Z",
+      "updated_at": "2024-02-20T10:00:00Z"
+    }
+  ],
+  "services": [
+    {
+      "id": "s1111111-1111-1111-1111-111111111111",
+      "contract_id": "ct111111-1111-1111-1111-111111111111",
+      "name": "Desenvolvimento Full Stack",
+      "description": "Desenvolvimento frontend e backend da plataforma",
+      "type": "desenvolvimento",
+      "created_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "s2222222-2222-2222-2222-222222222222",
+      "contract_id": "ct111111-1111-1111-1111-111111111111",
+      "name": "Design UX/UI",
+      "description": "Criação de interfaces e experiência do usuário",
+      "type": "desenvolvimento",
+      "created_at": "2024-01-15T10:00:00Z"
+    },
+    {
+      "id": "s3333333-3333-3333-3333-333333333333",
+      "contract_id": "ct222222-2222-2222-2222-222222222222",
+      "name": "Consultoria de Marketing",
+      "description": "Reuniões mensais de planejamento estratégico",
+      "type": "assessoria",
+      "created_at": "2024-03-01T10:00:00Z"
+    },
+    {
+      "id": "s4444444-4444-4444-4444-444444444444",
+      "contract_id": "ct222222-2222-2222-2222-222222222222",
+      "name": "Gestão de Redes Sociais",
+      "description": "Criação de conteúdo e gestão de posts",
+      "type": "assessoria",
+      "created_at": "2024-03-01T10:00:00Z"
+    },
+    {
+      "id": "s5555555-5555-5555-5555-555555555555",
+      "contract_id": "ct333333-3333-3333-3333-333333333333",
+      "name": "Landing Page Responsiva",
+      "description": "Desenvolvimento de página de conversão otimizada",
+      "type": "landing_page",
+      "created_at": "2024-02-20T10:00:00Z"
+    }
+  ],
+  "meetings": [
+    {
+      "id": "m1111111-1111-1111-1111-111111111111",
+      "contract_id": "ct111111-1111-1111-1111-111111111111",
+      "title": "Kickoff do Projeto E-commerce",
+      "department": "tecnologia",
+      "meeting_date": "2024-01-20T14:00:00Z",
+      "status": "completed",
+      "google_calendar_event_id": null,
+      "summary": "Reunião inicial para alinhamento de escopo e definição de requisitos técnicos da plataforma. Discutimos arquitetura, tecnologias e cronograma do projeto.",
+      "summary_file_url": null,
+      "created_by": "u3333333-3333-3333-3333-333333333333",
+      "created_at": "2024-01-18T10:00:00Z",
+      "updated_at": "2024-01-20T16:00:00Z"
+    },
+    {
+      "id": "m2222222-2222-2222-2222-222222222222",
+      "contract_id": "ct111111-1111-1111-1111-111111111111",
+      "title": "Review de Protótipos - Sprint 1",
+      "department": "tecnologia",
+      "meeting_date": "2024-02-05T15:00:00Z",
+      "status": "completed",
+      "google_calendar_event_id": null,
+      "summary": "Apresentação dos protótipos iniciais do sistema. Cliente aprovou design e fluxos de navegação. Próximos passos: desenvolvimento das telas principais.",
+      "summary_file_url": null,
+      "created_by": "u3333333-3333-3333-3333-333333333333",
+      "created_at": "2024-02-03T10:00:00Z",
+      "updated_at": "2024-02-05T17:00:00Z"
+    },
+    {
+      "id": "m3333333-3333-3333-3333-333333333333",
+      "contract_id": "ct222222-2222-2222-2222-222222222222",
+      "title": "Planejamento de Campanhas Q2",
+      "department": "marketing",
+      "meeting_date": "2024-03-15T10:00:00Z",
+      "status": "completed",
+      "google_calendar_event_id": null,
+      "summary": "Definimos estratégias de marketing para o segundo trimestre. Foco em crescimento orgânico e campanhas pagas no Instagram e Google Ads.",
+      "summary_file_url": null,
+      "created_by": "u3333333-3333-3333-3333-333333333333",
+      "created_at": "2024-03-13T10:00:00Z",
+      "updated_at": "2024-03-15T12:00:00Z"
+    },
+    {
+      "id": "m4444444-4444-4444-4444-444444444444",
+      "contract_id": "ct111111-1111-1111-1111-111111111111",
+      "title": "Demo - Módulo de Checkout",
+      "department": "tecnologia",
+      "meeting_date": "2025-11-05T14:00:00Z",
+      "status": "scheduled",
+      "google_calendar_event_id": null,
+      "summary": null,
+      "summary_file_url": null,
+      "created_by": "u3333333-3333-3333-3333-333333333333",
+      "created_at": "2024-10-20T10:00:00Z",
+      "updated_at": "2024-10-20T10:00:00Z"
+    },
+    {
+      "id": "m5555555-5555-5555-5555-555555555555",
+      "contract_id": "ct222222-2222-2222-2222-222222222222",
+      "title": "Review de Métricas de Marketing",
+      "department": "marketing",
+      "meeting_date": "2025-11-10T11:00:00Z",
+      "status": "scheduled",
+      "google_calendar_event_id": null,
+      "summary": null,
+      "summary_file_url": null,
+      "created_by": "u3333333-3333-3333-3333-333333333333",
+      "created_at": "2024-10-25T10:00:00Z",
+      "updated_at": "2024-10-25T10:00:00Z"
+    }
+  ],
+  "insights": [
+    {
+      "id": "i1111111-1111-1111-1111-111111111111",
+      "contract_id": null,
+      "title": "O Futuro do E-commerce no Brasil",
+      "description": "Análise das tendências de e-commerce para 2024 e como se preparar para o mercado digital",
+      "type": "podcast",
+      "media_url": "https://example.com/podcasts/futuro-ecommerce.mp3",
+      "thumbnail_url": "https://via.placeholder.com/400x225/34372e/e6e730?text=Podcast+E-commerce",
+      "duration": 1245,
+      "published_at": "2024-03-01T08:00:00Z",
+      "created_at": "2024-02-28T10:00:00Z"
+    },
+    {
+      "id": "i2222222-2222-2222-2222-222222222222",
+      "contract_id": null,
+      "title": "5 Dicas para Melhorar a Conversão do Seu Site",
+      "description": "Estratégias práticas para aumentar a taxa de conversão e melhorar a experiência do usuário",
+      "type": "video",
+      "media_url": "https://example.com/videos/dicas-conversao.mp4",
+      "thumbnail_url": "https://via.placeholder.com/400x225/34372e/e6e730?text=Video+Conversao",
+      "duration": 420,
+      "published_at": "2024-03-10T10:00:00Z",
+      "created_at": "2024-03-08T10:00:00Z"
+    },
+    {
+      "id": "i3333333-3333-3333-3333-333333333333",
+      "contract_id": "ct111111-1111-1111-1111-111111111111",
+      "title": "Update do Projeto: Progresso Q1 2024",
+      "description": "Resumo exclusivo do andamento do seu projeto de e-commerce",
+      "type": "video",
+      "media_url": "https://example.com/videos/update-projeto-techcorp.mp4",
+      "thumbnail_url": "https://via.placeholder.com/400x225/34372e/e6e730?text=Update+Projeto",
+      "duration": 305,
+      "published_at": "2024-03-25T15:00:00Z",
+      "created_at": "2024-03-24T10:00:00Z"
+    },
+    {
+      "id": "i4444444-4444-4444-4444-444444444444",
+      "contract_id": null,
+      "title": "Marketing Digital: Tendências 2024",
+      "description": "As principais tendências de marketing digital e como aplicá-las ao seu negócio",
+      "type": "podcast",
+      "media_url": "https://example.com/podcasts/marketing-tendencias.mp3",
+      "thumbnail_url": "https://via.placeholder.com/400x225/34372e/e6e730?text=Podcast+Marketing",
+      "duration": 1580,
+      "published_at": "2024-04-05T08:00:00Z",
+      "created_at": "2024-04-03T10:00:00Z"
+    },
+    {
+      "id": "i5555555-5555-5555-5555-555555555555",
+      "contract_id": null,
+      "title": "Como Criar uma Landing Page que Converte",
+      "description": "Guia completo sobre os elementos essenciais de uma landing page de alta conversão",
+      "type": "video",
+      "media_url": "https://example.com/videos/landing-page-conversao.mp4",
+      "thumbnail_url": "https://via.placeholder.com/400x225/34372e/e6e730?text=Landing+Page",
+      "duration": 620,
+      "published_at": "2024-04-15T10:00:00Z",
+      "created_at": "2024-04-13T10:00:00Z"
+    }
+  ],
+  "support_requests": [
+    {
+      "id": "sr111111-1111-1111-1111-111111111111",
+      "company_id": "c1111111-1111-1111-1111-111111111111",
+      "user_id": "u1111111-1111-1111-1111-111111111111",
+      "subject": "Dúvida sobre integração de pagamento",
+      "message": "Gostaria de entender melhor como funciona a integração com o gateway de pagamento. É possível usar múltiplos gateways?",
+      "status": "closed",
+      "created_at": "2024-02-15T14:30:00Z",
+      "updated_at": "2024-02-16T10:00:00Z"
+    },
+    {
+      "id": "sr222222-2222-2222-2222-222222222222",
+      "company_id": "c2222222-2222-2222-2222-222222222222",
+      "user_id": "u2222222-2222-2222-2222-222222222222",
+      "subject": "Solicitação de ajuste na landing page",
+      "message": "Precisamos alterar o texto do CTA principal e adicionar um novo formulário de contato.",
+      "status": "in_progress",
+      "created_at": "2024-04-20T11:00:00Z",
+      "updated_at": "2024-04-21T09:00:00Z"
+    }
+  ],
+  "auth_users": [
+    {
+      "email": "cliente@techcorp.com",
+      "password": "senha123",
+      "full_name": "João Silva",
+      "company": "TechCorp Solutions"
+    },
+    {
+      "email": "maria@innovatehub.com",
+      "password": "senha123",
+      "full_name": "Maria Santos",
+      "company": "InnovateHub Brasil"
+    },
+    {
+      "email": "admin@bystartup.com",
+      "password": "admin123",
+      "full_name": "Admin ByStartup",
+      "role": "admin"
+    }
+  ]
+}
