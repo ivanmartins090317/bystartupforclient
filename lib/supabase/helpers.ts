@@ -1,0 +1,319 @@
+import {redirect} from "next/navigation";
+import {createServerComponentClient} from "@/lib/supabase/server";
+import {
+  getErrorMessage,
+  handleSupabaseError,
+  isAuthError,
+  type ErrorResult
+} from "@/lib/supabase/errors";
+import type {Database} from "@/types/database.types";
+
+type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+type Company = Database["public"]["Tables"]["companies"]["Row"];
+type Contract = Database["public"]["Tables"]["contracts"]["Row"];
+type Meeting = Database["public"]["Tables"]["meetings"]["Row"];
+type Service = Database["public"]["Tables"]["services"]["Row"];
+type Insight = Database["public"]["Tables"]["insights"]["Row"];
+
+/**
+ * Resultado tipado de perfil com empresa
+ */
+export interface ProfileWithCompany extends Profile {
+  companies: Company | null;
+}
+
+/**
+ * Busca o perfil do usuário autenticado com sua empresa
+ *
+ * Funcionalidade central reutilizada em várias páginas.
+ * Centralizar aqui evita:
+ * - Duplicação de código
+ * - Inconsistências no tratamento de erro
+ * - Queries diferentes que buscam a mesma coisa
+ */
+export async function getUserProfile(): Promise<ErrorResult<ProfileWithCompany>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    // 1. Verificar autenticação
+    const {
+      data: {user},
+      error: authError
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      redirect("/login");
+    }
+
+    // 2. Buscar perfil com join na empresa
+    const {data: profile, error: profileError} = await supabase
+      .from("profiles")
+      .select("*, companies(*)")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) {
+      // Erro de autenticação = redirecionar
+      if (isAuthError(profileError)) {
+        redirect("/login");
+      }
+
+      return {
+        data: null,
+        error: getErrorMessage(profileError),
+        isError: true
+      };
+    }
+
+    if (!profile) {
+      return {
+        data: null,
+        error: "Perfil não encontrado. Entre em contato com o suporte.",
+        isError: true
+      };
+    }
+
+    return {
+      data: profile as ProfileWithCompany,
+      error: null,
+      isError: false
+    };
+  } catch (error) {
+    // Erros inesperados (network, timeouts, etc)
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar perfil do usuário",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca contratos ativos de uma empresa
+ */
+export async function getCompanyContracts(
+  companyId: string
+): Promise<ErrorResult<Contract[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    const {data, error} = await supabase
+      .from("contracts")
+      .select("*")
+      .eq("company_id", companyId)
+      .eq("status", "active")
+      .order("signed_date", {ascending: false});
+
+    return handleSupabaseError({data, error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar contratos",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca todos os contratos de uma empresa (ativos e inativos)
+ */
+export async function getAllCompanyContracts(
+  companyId: string
+): Promise<ErrorResult<Contract[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    const {data, error} = await supabase
+      .from("contracts")
+      .select("*, services(*)")
+      .eq("company_id", companyId)
+      .order("signed_date", {ascending: false});
+
+    return handleSupabaseError({data, error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar contratos",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca IDs de contratos de uma empresa
+ */
+export async function getContractIds(companyId: string): Promise<ErrorResult<string[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    const {data, error} = await supabase
+      .from("contracts")
+      .select("id")
+      .eq("company_id", companyId);
+
+    if (error) {
+      return handleSupabaseError<string[]>({data: null, error});
+    }
+
+    const ids = (data || []).map((c) => c.id);
+    return {
+      data: ids,
+      error: null,
+      isError: false
+    };
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar IDs dos contratos",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca próxima reunião agendada
+ */
+export async function getNextMeeting(
+  contractIds: string[]
+): Promise<ErrorResult<Meeting | null>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    if (contractIds.length === 0) {
+      return {data: null, error: null, isError: false};
+    }
+
+    const {data, error} = await supabase
+      .from("meetings")
+      .select("*")
+      .in("contract_id", contractIds)
+      .eq("status", "scheduled")
+      .gte("meeting_date", new Date().toISOString())
+      .order("meeting_date", {ascending: true})
+      .limit(1)
+      .maybeSingle();
+
+    return handleSupabaseError({data: data || null, error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar próxima reunião",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca reuniões recentes
+ */
+export async function getRecentMeetings(
+  contractIds: string[]
+): Promise<ErrorResult<Meeting[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    if (contractIds.length === 0) {
+      return {data: [], error: null, isError: false};
+    }
+
+    const {data, error} = await supabase
+      .from("meetings")
+      .select("*")
+      .in("contract_id", contractIds)
+      .in("status", ["completed", "scheduled"])
+      .order("meeting_date", {ascending: false})
+      .limit(10);
+
+    return handleSupabaseError({data: data || [], error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar reuniões",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca serviços de um contrato
+ */
+export async function getContractServices(
+  contractId: string
+): Promise<ErrorResult<Service[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    const {data, error} = await supabase
+      .from("services")
+      .select("*")
+      .eq("contract_id", contractId)
+      .order("created_at", {ascending: false});
+
+    return handleSupabaseError({data: data || [], error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar serviços",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca todas as reuniões de contratos específicos
+ */
+export async function getMeetingsByContracts(
+  contractIds: string[]
+): Promise<ErrorResult<Meeting[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    if (contractIds.length === 0) {
+      return {data: [], error: null, isError: false};
+    }
+
+    const {data, error} = await supabase
+      .from("meetings")
+      .select("*")
+      .in("contract_id", contractIds)
+      .order("meeting_date", {ascending: false});
+
+    return handleSupabaseError({data: data || [], error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar reuniões",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca insights (globais ou de contratos específicos)
+ */
+export async function getInsights(
+  contractIds: string[]
+): Promise<ErrorResult<Insight[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    // Insights podem ser globais (contract_id = null) ou específicos
+    let query = supabase.from("insights").select("*");
+
+    if (contractIds.length > 0) {
+      query = query.or(`contract_id.is.null,contract_id.in.(${contractIds.join(",")})`);
+    } else {
+      query = query.is("contract_id", null);
+    }
+
+    const {data, error} = await query.order("published_at", {ascending: false});
+
+    return handleSupabaseError({data: data || [], error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar insights",
+      isError: true
+    };
+  }
+}
