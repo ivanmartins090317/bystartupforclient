@@ -18,6 +18,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import {EmptyState} from "@/components/shared/empty-state";
+import {ContractViewerDialog} from "@/components/contratos/contract-viewer-dialog";
 
 interface ContractsListProps {
   contracts: ContractWithServices[];
@@ -25,6 +26,7 @@ interface ContractsListProps {
 
 export function ContractsList({contracts}: ContractsListProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [openContractId, setOpenContractId] = useState<string | null>(null);
 
   function handleStatusChange(value: string) {
     // Type guard: só aceita valores válidos
@@ -135,7 +137,12 @@ export function ContractsList({contracts}: ContractsListProps) {
 
               {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button variant="outline" size="sm" className="flex-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                  onClick={() => setOpenContractId(contract.id)}
+                >
                   <Eye className="h-4 w-4 mr-1" />
                   Visualizar
                 </Button>
@@ -153,6 +160,14 @@ export function ContractsList({contracts}: ContractsListProps) {
                   </Button>
                 )}
               </div>
+              {openContractId === contract.id && (
+                <ContractViewerDialog
+                  contractId={contract.id}
+                  title={contract.title}
+                  open={openContractId === contract.id}
+                  onOpenChange={(open) => setOpenContractId(open ? contract.id : null)}
+                />
+              )}
             </CardContent>
           </Card>
         ))}

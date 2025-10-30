@@ -14,6 +14,7 @@ import {
 import {LogOut, User, Settings} from "lucide-react";
 import {toast} from "sonner";
 import type {ProfileWithCompany} from "@/lib/supabase/helpers";
+import Image from "next/image";
 
 interface DashboardHeaderProps {
   profile: ProfileWithCompany;
@@ -42,13 +43,15 @@ export function DashboardHeader({profile}: DashboardHeaderProps) {
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-4">
           {/* Logo ByStartup */}
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-secondary-500 rounded-lg flex items-center justify-center">
-              <span className="text-primary-500 text-lg font-bold">BS</span>
-            </div>
-            <span className="font-bold text-secondary-900 text-lg hidden sm:block">
-              ByStartup
-            </span>
+          <div className="flex items-center gap-2 p-0.5">
+            <Image
+              src="/logo-bystartup.svg"
+              alt="ByStartup"
+              width={140}
+              height={32}
+              priority
+              className="h-6 md:h-7 w-auto bg-secondary-500 rounded-lg p-2"
+            />
           </div>
 
           {/* Logo Cliente */}

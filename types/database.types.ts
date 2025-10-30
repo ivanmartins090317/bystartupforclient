@@ -102,6 +102,41 @@ export type Database = {
           updated_at?: string;
         };
       };
+      contract_documents: {
+        Row: {
+          id: string;
+          contract_id: string;
+          storage_path: string;
+          file_name: string;
+          file_size: number;
+          mime_type: string;
+          published_at: string | null;
+          created_by: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          contract_id: string;
+          storage_path: string;
+          file_name: string;
+          file_size: number;
+          mime_type?: string;
+          published_at?: string | null;
+          created_by: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          contract_id?: string;
+          storage_path?: string;
+          file_name?: string;
+          file_size?: number;
+          mime_type?: string;
+          published_at?: string | null;
+          created_by?: string;
+          created_at?: string;
+        };
+      };
       services: {
         Row: {
           id: string;

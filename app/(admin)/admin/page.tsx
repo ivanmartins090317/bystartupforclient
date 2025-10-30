@@ -1,4 +1,6 @@
 import {createServerComponentClient} from "@/lib/supabase/server";
+import {createServiceClient} from "@/lib/supabase/service";
+import Link from "next/link";
 import {redirect} from "next/navigation";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Users, FileText, Calendar, Lightbulb} from "lucide-react";
@@ -37,6 +39,22 @@ export default async function AdminPage() {
     supabase.from("meetings").select("*", {count: "exact", head: true}),
     supabase.from("insights").select("*", {count: "exact", head: true})
   ]);
+
+  // Últimos contratos (cross-empresa)
+  const svc = createServiceClient();
+  interface LatestContractListItem {
+    id: string;
+    contract_number: string;
+    title: string;
+    status: "active" | "inactive";
+    companies: {name: string} | null;
+  }
+  const {data: latestContracts} = await svc
+    .from("contracts")
+    .select("id, contract_number, title, status, signed_date, companies(name)")
+    .returns<LatestContractListItem[]>()
+    .order("signed_date", {ascending: false})
+    .limit(5);
 
   return (
     <div className="space-y-6">
@@ -90,27 +108,34 @@ export default async function AdminPage() {
         </Card>
       </div>
 
-      {/* Coming Soon */}
+      {/* Últimos contratos */}
       <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <div className="w-16 h-16 rounded-full bg-primary-100 flex items-center justify-center mb-4">
-            <span className="text-2xl">🚧</span>
+        <CardHeader className="flex items-center justify-between">
+          <CardTitle className="text-base">Últimos contratos</CardTitle>
+          <Link className="text-sm underline" href="/admin/contracts">
+            Ver todos
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3">
+            {(latestContracts || []).map((c) => (
+              <Link
+                key={c.id}
+                href={`/admin/contracts/${c.id}`}
+                className="flex items-center justify-between border rounded-md p-3 hover:bg-muted/30"
+              >
+                <div>
+                  <p className="font-medium">{c.title}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {c.contract_number} • {c.companies?.name || "-"} • {c.status}
+                  </p>
+                </div>
+              </Link>
+            ))}
+            {(!latestContracts || latestContracts.length === 0) && (
+              <p className="text-sm text-muted-foreground">Nenhum contrato cadastrado.</p>
+            )}
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Funcionalidades em Desenvolvimento
-          </h3>
-          <p className="text-gray-600 text-center max-w-md">
-            O painel administrativo completo estará disponível na próxima fase do projeto.
-            Funcionalidades planejadas:
-          </p>
-          <ul className="text-sm text-gray-600 mt-4 space-y-2 text-left">
-            <li>• Gerenciamento de clientes e usuários</li>
-            <li>• Cadastro e edição de contratos</li>
-            <li>• Agendamento e gestão de reuniões</li>
-            <li>• Upload de resumos de reuniões</li>
-            <li>• Publicação de insights (podcasts e vídeos)</li>
-            <li>• Gestão de solicitações de suporte</li>
-          </ul>
         </CardContent>
       </Card>
     </div>

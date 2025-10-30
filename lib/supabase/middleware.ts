@@ -45,13 +45,31 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Se estiver autenticado e tentar acessar login
-  // TEMPORARIAMENTE COMENTADO PARA TESTE
-  // if (user && request.nextUrl.pathname === "/login") {
-  //   const redirectUrl = request.nextUrl.clone();
-  //   redirectUrl.pathname = "/dashboard";
-  //   return NextResponse.redirect(redirectUrl);
-  // }
+  // Redirecionamento por papel (admin vs cliente)
+  if (user) {
+    const {data: profile} = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    const isAdmin = profile?.role === "admin";
+    const path = request.nextUrl.pathname;
+
+    // Admin indo para raiz ou dashboard → manda para /admin
+    if (isAdmin && (path === "/" || path === "/dashboard")) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/admin";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    // Cliente tentando acessar /admin → manda para /dashboard
+    if (!isAdmin && path.startsWith("/admin")) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/dashboard";
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
 
   return supabaseResponse;
 }

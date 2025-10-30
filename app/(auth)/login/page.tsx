@@ -9,13 +9,17 @@ export default function LoginPage() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center space-y-4">
             <div className="flex justify-center">
-              <div className="w-32 h-32 bg-secondary-500 rounded-lg flex items-center justify-center">
-                <span className="text-primary-500 text-3xl font-bold">BS</span>
-              </div>
+              <Image
+                src="/favico-bystartup.svg"
+                alt="ByStartup"
+                width={64}
+                height={64}
+                priority
+              />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-secondary-900">
-                Bem-vindo ao ByStartup
+                Bem-vindo a ByStartup
               </h1>
               <p className="text-gray-600 mt-2">
                 Acesse o portal exclusivo para clientes
