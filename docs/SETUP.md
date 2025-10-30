@@ -518,20 +518,211 @@ WHERE email = 'cliente@techcorp.com';
 
 1. Acesse [Google Cloud Console](https://console.cloud.google.com)
 2. Crie um novo projeto
-3. Habilite a Google Calendar API
-4. Vá em "Credentials"
-5. Crie OAuth 2.0 Client ID
-6. Adicione redirect URI: `http://localhost:3000/api/auth/google/callback`
+3. Habilite a **Google Calendar API**:
+   - Vá em **APIs & Services** > **Library**
+   - Procure por "Google Calendar API"
+   - Clique em **Enable**
+4. Configure OAuth 2.0:
+   - Vá em **APIs & Services** > **Credentials**
+   - Clique em **Create Credentials** > **OAuth client ID**
+   - Se for a primeira vez, configure a **OAuth consent screen**:
+     - Tipo: **External** (para desenvolvimento)
+     - Preencha informações básicas (app name, email)
+     - Scopes: Adicione `https://www.googleapis.com/auth/calendar` e `https://www.googleapis.com/auth/calendar.events`
+     - Test users: Adicione seu email do Google
+   - Crie o OAuth Client ID:
+     - Application type: **Web application**
+     - Name: `ByStartup Calendar Client`
+     - Authorized redirect URIs:
+       - `http://localhost:3000/api/auth/google/callback` (desenvolvimento)
+       - `https://seu-dominio.vercel.app/api/auth/google/callback` (produção)
+5. Copie o **Client ID** e **Client Secret**
 
-### 4.2 Adicionar Credenciais
+### 4.2 Adicionar Credenciais ao Projeto
 
 Adicione ao `.env.local`:
 
 ```bash
+# Google Calendar OAuth Credentials
 GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=seu-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:3000/api/auth/google/callback
 ```
+
+### 4.3 Obter Tokens de Acesso para Testes
+
+Para testar a integração, você precisa obter os tokens de acesso do Google Calendar. Existem duas formas:
+
+#### Opção A: Via Fluxo OAuth (Recomendado)
+
+1. **Inicie o servidor de desenvolvimento:**
+   ```bash
+   npm run dev
+   ```
+
+2. **Obtenha a URL de autorização:**
+   - Faça uma requisição GET para: `http://localhost:3000/api/calendar/authorize`
+   - Ou acesse via browser/Postman:
+     ```bash
+     curl http://localhost:3000/api/calendar/authorize
+     ```
+   - Você receberá uma resposta JSON com `authUrl`
+
+3. **Autorize o acesso:**
+   - Abra a `authUrl` no navegador
+   - Faça login com sua conta Google
+   - Aceite as permissões solicitadas
+   - Você será redirecionado para `/api/auth/google/callback`
+
+4. **Obter os tokens:**
+   - Após o redirecionamento, verifique o **console do servidor**
+   - Os tokens serão logados no formato:
+     ```json
+     {
+       "access_token": "ya29.a0...",
+       "refresh_token": "1//0g...",
+       "expiry_date": 1735689600000
+     }
+     ```
+
+5. **Adicionar tokens ao `.env.local`:**
+   ```bash
+   # Tokens temporários para testes (remover quando Fase 5 for implementada)
+   GOOGLE_TEST_ACCESS_TOKEN=ya29.a0AfH6SMB...
+   GOOGLE_TEST_REFRESH_TOKEN=1//0gvQVzQ...  # (opcional, mas recomendado)
+   GOOGLE_TEST_EXPIRY_DATE=1735689600000      # (opcional, timestamp em ms)
+   ```
+
+6. **Reinicie o servidor** para carregar as novas variáveis:
+   ```bash
+   # Pare o servidor (Ctrl+C) e inicie novamente
+   npm run dev
+   ```
+
+#### Opção B: Via Google OAuth Playground
+
+1. Acesse [Google OAuth Playground](https://developers.google.com/oauthplayground/)
+2. Clique em ⚙️ (Settings) no canto superior direito
+3. Marque **"Use your own OAuth credentials"**
+4. Cole seu `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET`
+5. No painel esquerdo, encontre **"Calendar API v3"**
+6. Marque os scopes:
+   - `https://www.googleapis.com/auth/calendar`
+   - `https://www.googleapis.com/auth/calendar.events`
+7. Clique em **"Authorize APIs"**
+8. Faça login e autorize
+9. Clique em **"Exchange authorization code for tokens"**
+10. Copie os tokens retornados
+11. Adicione ao `.env.local` conforme descrito acima
+
+### 4.4 Testar a Integração
+
+Após configurar os tokens, você pode testar as três funções principais:
+
+#### 4.4.1 Salvar Reunião no Google Calendar
+
+```typescript
+import { saveMeetingToGoogleCalendar } from "@/lib/actions/meetings";
+
+const result = await saveMeetingToGoogleCalendar(meetingId);
+
+if (result.success) {
+  console.log("Reunião salva! Event ID:", result.data?.google_calendar_event_id);
+} else {
+  console.error("Erro:", result.error);
+}
+```
+
+#### 4.4.2 Reagendar Reunião
+
+```typescript
+import { rescheduleMeeting } from "@/lib/actions/meetings";
+
+// newDate deve ser uma string ISO (ex: "2025-01-15T14:00:00Z")
+const result = await rescheduleMeeting(meetingId, newDateISOString);
+
+if (result.success) {
+  console.log("Reunião reagendada!");
+} else {
+  console.error("Erro:", result.error);
+}
+```
+
+#### 4.4.3 Excluir Reunião
+
+```typescript
+import { deleteMeeting } from "@/lib/actions/meetings";
+
+const result = await deleteMeeting(meetingId);
+
+if (result.success) {
+  console.log("Reunião excluída!");
+} else {
+  console.error("Erro:", result.error);
+}
+```
+
+### 4.5 Verificar Eventos Criados
+
+1. Acesse [Google Calendar](https://calendar.google.com)
+2. Verifique se os eventos aparecem no seu calendário principal
+3. Confirme que as datas, títulos e descrições estão corretas
+
+### 4.6 Checklist de Configuração
+
+- [ ] Projeto criado no Google Cloud Console
+- [ ] Google Calendar API habilitada
+- [ ] OAuth 2.0 Client ID criado
+- [ ] Variáveis `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` configuradas
+- [ ] Tokens obtidos via OAuth flow
+- [ ] Variáveis `GOOGLE_TEST_ACCESS_TOKEN` configuradas (e opcionalmente `GOOGLE_TEST_REFRESH_TOKEN`)
+- [ ] Servidor reiniciado após adicionar variáveis
+- [ ] Testes básicos executados com sucesso
+
+### 4.7 Migração para Fase 5 (Tokens no Banco de Dados) ✅
+
+A **Fase 5** foi implementada! Os tokens agora são armazenados automaticamente no banco de dados, eliminando a necessidade de variáveis de ambiente.
+
+#### 4.7.1 Executar Migração do Banco
+
+1. **Acesse o Supabase:**
+   - Vá em **SQL Editor** > **New query**
+   - Cole o conteúdo de `docs/migrations/005_google_calendar_tokens.sql`
+   - Clique em **Run**
+
+2. **Migrar Tokens Existentes (se você já tinha tokens no `.env.local`):**
+   - Certifique-se de estar logado como **admin**
+   - Acesse: `http://localhost:3000/api/calendar/migrate-tokens`
+   - Os tokens serão migrados automaticamente do `.env.local` para o banco
+
+3. **OU Conectar Novamente (se preferir):**
+   - Acesse: `http://localhost:3000/api/calendar/authorize`
+   - Copie a `authUrl` e autorize novamente
+   - Tokens serão salvos automaticamente no banco
+
+#### 4.7.2 Verificar Status dos Tokens
+
+Acesse: `http://localhost:3000/api/calendar/check-tokens`
+
+Você verá:
+- Se há tokens no banco
+- Data de expiração
+- Se possui refresh_token
+
+#### 4.7.3 Benefícios da Fase 5
+
+- ✅ **Refresh automático:** Tokens são renovados automaticamente antes de expirar
+- ✅ **Segurança:** Tokens protegidos por RLS (Row Level Security)
+- ✅ **Persistência:** Não precisa configurar variáveis de ambiente
+- ✅ **Gestão centralizada:** Tokens gerenciados pelo sistema
+
+### 4.8 Importante ⚠️
+
+- **Tokens expiram**: Access tokens normalmente expiram após 1 hora, mas são renovados automaticamente usando `refresh_token`
+- **Fase 5 Implementada**: Os tokens agora são salvos no banco de dados automaticamente (veja seção 4.7)
+- **Fallback**: Se não houver tokens no banco, o sistema ainda tenta usar variáveis `GOOGLE_TEST_*` como fallback
+- **Segurança**: **NUNCA** commite tokens no repositório Git!
+- **Produção**: Em produção, atualize o `GOOGLE_REDIRECT_URI` para a URL do seu domínio.
 
 ---
 
@@ -611,6 +802,58 @@ No Supabase, adicione a URL da Vercel em:
 1. Verifique se TODAS as variáveis foram adicionadas
 2. Rode `npm run build` localmente para testar
 3. Verifique os logs de build na Vercel
+
+### Erro: "Google Calendar não está configurado"
+
+**Causa:** Tokens não configurados ou função retornando `null`
+
+**Solução:**
+
+1. Verifique se `GOOGLE_TEST_ACCESS_TOKEN` está definido no `.env.local`
+2. Verifique se o servidor foi reiniciado após adicionar a variável
+3. Confirme que o token não expirou (access tokens expiram em ~1 hora)
+4. Obtenha novos tokens seguindo o passo **4.3**
+
+### Erro: "Invalid Credentials" ou "Token expired"
+
+**Causa:** Token de acesso expirado ou inválido
+
+**Solução:**
+
+1. **Renove o token manualmente:**
+   - Siga novamente o passo **4.3** para obter novos tokens
+   - Atualize `GOOGLE_TEST_ACCESS_TOKEN` no `.env.local`
+   - Reinicie o servidor
+
+2. **Use refresh token (quando implementado):**
+   - O `GOOGLE_TEST_REFRESH_TOKEN` permite renovação automática
+   - Adicione-o ao `.env.local` se disponível
+
+### Erro: "Redirect URI mismatch"
+
+**Causa:** URI de redirecionamento não corresponde ao configurado no Google Cloud
+
+**Solução:**
+
+1. Verifique o `GOOGLE_REDIRECT_URI` no `.env.local`
+2. Confirme que a mesma URI está cadastrada no Google Cloud Console:
+   - **APIs & Services** > **Credentials** > Seu OAuth Client
+   - Adicione a URI em **Authorized redirect URIs**
+3. Aguarde alguns minutos para propagação
+4. Tente novamente
+
+### Erro: "Insufficient permissions" ou "Scope not granted"
+
+**Causa:** Scopes necessários não foram solicitados ou negados
+
+**Solução:**
+
+1. Verifique se durante a autorização você aceitou todas as permissões
+2. Se negou, será necessário reautorizar:
+   - Acesse novamente a URL de autorização
+   - **Revogue** o acesso anterior se solicitado
+   - Aceite todas as permissões solicitadas
+3. Confirme que os scopes corretos estão no código de autorização
 
 ---
 

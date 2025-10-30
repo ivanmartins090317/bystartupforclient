@@ -17,6 +17,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import {EmptyState} from "@/components/shared/empty-state";
+import {MeetingSummaryModal} from "./meeting-summary-modal";
 
 interface MeetingsListProps {
   meetings: Meeting[];
@@ -181,79 +182,93 @@ interface MeetingCardProps {
 function MeetingCard({meeting}: MeetingCardProps) {
   const meetingDate = new Date(meeting.meeting_date);
   const isUpcoming = isFuture(meetingDate) || isToday(meetingDate);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
-    <Card className={isUpcoming ? "border-primary-200 bg-primary-50/30" : ""}>
-      <CardContent className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-          <div className="flex-1 space-y-3">
-            {/* Title and Badges */}
-            <div>
-              <h3 className="font-semibold text-secondary-900 text-lg mb-2">
-                {meeting.title}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                <Badge className={departmentColors[meeting.department]}>
-                  <Users className="h-3 w-3 mr-1" />
-                  {DEPARTMENT_LABELS[meeting.department]}
-                </Badge>
-                <Badge className={statusColors[meeting.status]}>
-                  {MEETING_STATUS_LABELS[meeting.status]}
-                </Badge>
+    <>
+      <Card className={isUpcoming ? "border-primary-200 bg-primary-50/30" : ""}>
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex-1 space-y-3">
+              {/* Title and Badges */}
+              <div>
+                <h3 className="font-semibold text-secondary-900 text-lg mb-2">
+                  {meeting.title}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  <Badge className={departmentColors[meeting.department]}>
+                    <Users className="h-3 w-3 mr-1" />
+                    {DEPARTMENT_LABELS[meeting.department]}
+                  </Badge>
+                  <Badge className={statusColors[meeting.status]}>
+                    {MEETING_STATUS_LABELS[meeting.status]}
+                  </Badge>
+                </div>
               </div>
+
+              {/* Date and Time */}
+              <div className="flex flex-col sm:flex-row gap-3 text-sm text-gray-700">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {format(meetingDate, "dd 'de' MMMM 'de' yyyy", {locale: ptBR})}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  <span>{format(meetingDate, "HH:mm", {locale: ptBR})}</span>
+                </div>
+              </div>
+
+              {/* Summary Preview */}
+              {meeting.summary && meeting.status === "completed" && (
+                <p className="text-sm text-gray-600 line-clamp-2 pt-2 border-t">
+                  {meeting.summary}
+                </p>
+              )}
             </div>
 
-            {/* Date and Time */}
-            <div className="flex flex-col sm:flex-row gap-3 text-sm text-gray-700">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span>
-                  {format(meetingDate, "dd 'de' MMMM 'de' yyyy", {locale: ptBR})}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>{format(meetingDate, "HH:mm", {locale: ptBR})}</span>
-              </div>
-            </div>
-
-            {/* Summary Preview */}
-            {meeting.summary && meeting.status === "completed" && (
-              <p className="text-sm text-gray-600 line-clamp-2 pt-2 border-t">
-                {meeting.summary}
-              </p>
-            )}
-          </div>
-
-          {/* Actions */}
-          {meeting.status === "completed" && meeting.summary && (
-            <div className="flex sm:flex-col gap-2">
-              <Button variant="outline" size="sm" className="flex-1 sm:flex-none">
-                <Eye className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Visualizar</span>
-              </Button>
-              {meeting.summary_file_url && (
+            {/* Actions */}
+            {meeting.status === "completed" && meeting.summary && (
+              <div className="flex sm:flex-col gap-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  asChild
                   className="flex-1 sm:flex-none"
+                  onClick={() => setIsModalOpen(true)}
                 >
-                  <a
-                    href={meeting.summary_file_url}
-                    download
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Download className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Download</span>
-                  </a>
+                  <Eye className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Visualizar</span>
                 </Button>
-              )}
-            </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+                {meeting.summary_file_url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="flex-1 sm:flex-none"
+                  >
+                    <a
+                      href={meeting.summary_file_url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Download className="h-4 w-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Download</span>
+                    </a>
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <MeetingSummaryModal
+        meeting={meeting}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
+    </>
   );
 }

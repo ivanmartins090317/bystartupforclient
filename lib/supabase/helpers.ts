@@ -334,3 +334,66 @@ export async function getInsights(
     };
   }
 }
+
+/**
+ * Atualiza reuniÃ£o no banco de dados
+ */
+export async function updateMeeting(
+  meetingId: string,
+  updates: {
+    meeting_date?: string;
+    status?: "scheduled" | "completed" | "cancelled";
+    google_calendar_event_id?: string | null;
+  }
+): Promise<ErrorResult<Meeting>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    const {data, error} = await supabase
+      .from("meetings")
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", meetingId)
+      .select(
+        "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
+      )
+      .single();
+
+    return handleSupabaseError({data, error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao atualizar reuniÃ£o",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca reuniÃ£o por ID
+ */
+export async function getMeetingById(
+  meetingId: string
+): Promise<ErrorResult<Meeting>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    const {data, error} = await supabase
+      .from("meetings")
+      .select(
+        "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
+      )
+      .eq("id", meetingId)
+      .single();
+
+    return handleSupabaseError({data, error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar reuniÃ£o",
+      isError: true
+    };
+  }
+}
