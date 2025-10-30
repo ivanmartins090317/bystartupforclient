@@ -91,7 +91,7 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary-600" />
-            PrÃ³xima ReuniÃ£o
+            Próxima Reunião
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

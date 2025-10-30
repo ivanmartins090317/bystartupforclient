@@ -12,6 +12,7 @@ import {NextMeetingCard} from "@/components/dashboard/next-meeting-card";
 import {RecentMeetingsCard} from "@/components/dashboard/recent-meetings-card";
 import {ContractServicesCard} from "@/components/dashboard/contract-services-card";
 import {ContractsOverviewCard} from "@/components/dashboard/contracts-overview-card";
+import {ContractsRealtimeRefresher} from "@/components/dashboard/contracts-realtime-refresher";
 
 /**
  * Revalidação de cache: 60 segundos
@@ -21,7 +22,7 @@ import {ContractsOverviewCard} from "@/components/dashboard/contracts-overview-c
  * - Balanceia performance vs dados atualizados
  * - Cache reduz carga no Supabase e melhora UX
  */
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function DashboardPage() {
   // 1️⃣ Buscar perfil primeiro (necessário para outras queries)
@@ -76,6 +77,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <ContractsRealtimeRefresher companyId={companyId} />
       <WelcomeCard
         userName={profile.full_name}
         companyName={profile.companies?.name || ""}
@@ -97,6 +99,7 @@ export default async function DashboardPage() {
         <ContractsOverviewCard
           contracts={contracts}
           activeContractId={activeContract?.id}
+          totalCount={contractIds.length}
         />
       </div>
 

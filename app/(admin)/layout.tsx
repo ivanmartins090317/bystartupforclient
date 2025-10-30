@@ -2,9 +2,7 @@ import {ReactNode} from "react";
 import {redirect} from "next/navigation";
 import {createServerComponentClient} from "@/lib/supabase/server";
 import {DashboardHeader} from "@/components/dashboard/dashboard-header";
-import Link from "next/link";
-import {Button} from "@/components/ui/button";
-import {ArrowLeft} from "lucide-react";
+import {BackToDashboard} from "@/components/admin/back-to-dashboard";
 
 export default async function AdminLayout({children}: {children: ReactNode}) {
   const supabase = await createServerComponentClient();
@@ -34,14 +32,7 @@ export default async function AdminLayout({children}: {children: ReactNode}) {
 
       <main className="p-6 lg:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="mb-6">
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/dashboard">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Voltar ao Dashboard
-              </Link>
-            </Button>
-          </div>
+          <BackToDashboard />
           {children}
         </div>
       </main>

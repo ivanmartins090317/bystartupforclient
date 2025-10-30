@@ -12,6 +12,14 @@ export const metadata: Metadata = {
   title: "ByStartup - Portal do Cliente",
   description: "Portal exclusivo para clientes ByStartup",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      {url: "/favico-bystartup.svg", sizes: "any"},
+      {url: "/favico-bystartup.svg", type: "image/svg+xml"}
+    ],
+    apple: "/favico-bystartup.svg"
+  },
+  themeColor: "#34372e",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
