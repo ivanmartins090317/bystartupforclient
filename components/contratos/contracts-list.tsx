@@ -22,9 +22,10 @@ import {ContractViewerDialog} from "@/components/contratos/contract-viewer-dialo
 
 interface ContractsListProps {
   contracts: ContractWithServices[];
+  publishedIds?: string[];
 }
 
-export function ContractsList({contracts}: ContractsListProps) {
+export function ContractsList({contracts, publishedIds = []}: ContractsListProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [openContractId, setOpenContractId] = useState<string | null>(null);
 
@@ -90,15 +91,20 @@ export function ContractsList({contracts}: ContractsListProps) {
                   </h3>
                   <p className="text-sm text-gray-600">Nº {contract.contract_number}</p>
                 </div>
-                <Badge
+                <div className="flex items-center gap-2">
+                  {publishedIds.includes(contract.id) && (
+                    <Badge className="bg-primary-500 text-secondary-900">Publicado</Badge>
+                  )}
+                  <Badge
                   className={
                     contract.status === "active"
                       ? "bg-green-100 text-green-700"
                       : "bg-gray-100 text-gray-700"
                   }
-                >
-                  {contract.status === "active" ? "Ativo" : "Inativo"}
-                </Badge>
+                  >
+                    {contract.status === "active" ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
               </div>
 
               {/* Description */}

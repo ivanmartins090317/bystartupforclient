@@ -22,7 +22,10 @@ interface ContractFormProps {
 export function ContractForm({mode, companies, initial}: ContractFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [companyId, setCompanyId] = useState(initial?.company_id ?? (companies[0]?.id || ""));
+  const validCompanies = companies.filter(c => c.name.toLowerCase() !== "bystartup");
+  const [companyId, setCompanyId] = useState(
+    initial?.company_id ?? (validCompanies[0]?.id || "")
+  );
   const [status, setStatus] = useState<"active" | "inactive">(initial?.status ?? "active");
   const [number, setNumber] = useState(initial?.contract_number ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -77,7 +80,9 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
           <Select value={companyId} onValueChange={setCompanyId}>
             <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
             <SelectContent>
-              {companies.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+              {validCompanies.map(c => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

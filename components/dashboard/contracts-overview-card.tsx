@@ -9,11 +9,13 @@ import {EmptyState} from "@/components/shared/empty-state";
 interface ContractsOverviewCardProps {
   contracts: Contract[];
   activeContractId?: string;
+  totalCount?: number; // total de contratos (ativos + inativos)
 }
 
 export function ContractsOverviewCard({
   contracts,
-  activeContractId
+  activeContractId,
+  totalCount
 }: ContractsOverviewCardProps) {
   return (
     <Card>
@@ -41,11 +43,12 @@ export function ContractsOverviewCard({
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">Contratos ativos</span>
+              <span className="text-gray-600">Contratos</span>
               <span className="font-bold text-2xl text-secondary-900">
-                {contracts.length}
+                {typeof totalCount === "number" ? totalCount : contracts.length}
               </span>
             </div>
+            <p className="text-xs text-gray-600">Ativos: {contracts.length}</p>
 
             <div className="space-y-2">
               {contracts.slice(0, 3).map((contract) => (

@@ -71,3 +71,39 @@ export async function uploadContractDocument({contractId, file, publish}: Upload
 }
 
 
+export async function publishContractDocument(documentId: string) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  if (!supabaseUrl || !serviceKey) throw new Error("Configuração do Supabase ausente.");
+
+  const supabase = createClient(supabaseUrl, serviceKey);
+
+  // Descobrir contrato do documento
+  const {data: doc, error: docErr} = await supabase
+    .from("contract_documents")
+    .select("contract_id")
+    .eq("id", documentId)
+    .single();
+  if (docErr || !doc) throw new Error(docErr?.message || "Documento não encontrado");
+
+  // Despublicar anteriores do mesmo contrato
+  const {error: clearErr} = await supabase
+    .from("contract_documents")
+    .update({published_at: null})
+    .eq("contract_id", doc.contract_id)
+    .neq("id", documentId);
+  if (clearErr) throw new Error(clearErr.message);
+
+  // Publicar o documento atual
+  const {error: pubErr} = await supabase
+    .from("contract_documents")
+    .update({published_at: new Date().toISOString()})
+    .eq("id", documentId);
+  if (pubErr) throw new Error(pubErr.message);
+
+  revalidatePath("/admin/contracts");
+  revalidatePath("/contratos");
+  return {ok: true};
+}
+
+

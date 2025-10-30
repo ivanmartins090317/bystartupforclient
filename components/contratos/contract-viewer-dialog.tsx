@@ -3,6 +3,7 @@
 import {useEffect, useState} from "react";
 import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
 
 interface ContractViewerDialogProps {
   contractId: string;
@@ -15,9 +16,15 @@ interface SignedUrlResponse {
   url: string;
   fileName: string;
   mimeType: string;
+  isDraft?: boolean;
 }
 
-export function ContractViewerDialog({contractId, title, open, onOpenChange}: ContractViewerDialogProps) {
+export function ContractViewerDialog({
+  contractId,
+  title,
+  open,
+  onOpenChange
+}: ContractViewerDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signed, setSigned] = useState<SignedUrlResponse | null>(null);
@@ -28,11 +35,22 @@ export function ContractViewerDialog({contractId, title, open, onOpenChange}: Co
       setIsLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/contracts/${contractId}/document`, {cache: "no-store"});
-        if (!res.ok) throw new Error("Documento indisponível");
+        const res = await fetch(`/api/contracts/${contractId}/document`, {
+          cache: "no-store"
+        });
+        if (!res.ok) {
+          let details = "";
+          try {
+            const j = await res.json();
+            details = j?.message
+              ? ` - ${j.message} (${j?.contractId || contractId})`
+              : "";
+          } catch {}
+          throw new Error(`Documento indisponível${details}`);
+        }
         const data = (await res.json()) as SignedUrlResponse;
         if (isMounted) setSigned(data);
-      } catch (e) {
+      } catch {
         if (isMounted) setError("Nenhum documento publicado para este contrato.");
       } finally {
         if (isMounted) setIsLoading(false);
@@ -52,7 +70,9 @@ export function ContractViewerDialog({contractId, title, open, onOpenChange}: Co
         </DialogHeader>
 
         <div className="space-y-3">
-          {isLoading && <p className="text-sm text-muted-foreground">Carregando documento…</p>}
+          {isLoading && (
+            <p className="text-sm text-muted-foreground">Carregando documento…</p>
+          )}
           {!isLoading && error && (
             <p className="text-sm text-muted-foreground">{error}</p>
           )}
@@ -65,6 +85,11 @@ export function ContractViewerDialog({contractId, title, open, onOpenChange}: Co
           )}
 
           <div className="flex justify-end gap-2">
+            {signed?.isDraft && (
+              <Badge variant="outline" className="mr-auto">
+                Rascunho
+              </Badge>
+            )}
             <Button
               disabled={!signed?.url}
               onClick={() => signed?.url && window.open(signed.url, "_blank", "noopener")}
@@ -77,5 +102,3 @@ export function ContractViewerDialog({contractId, title, open, onOpenChange}: Co
     </Dialog>
   );
 }
-
-
