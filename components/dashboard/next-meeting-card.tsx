@@ -43,13 +43,13 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
       const result = await saveMeetingToGoogleCalendar(meeting.id);
 
       if (result.success) {
-        toast.success("ReuniÃ£o salva no Google Calendar com sucesso!");
+        toast.success("Reunião salva no Google Calendar com sucesso!");
         router.refresh();
       } else {
-        toast.error(result.error || "Erro ao salvar reuniÃ£o");
+        toast.error(result.error || "Erro ao salvar reunião");
       }
     } catch (error) {
-      toast.error("Erro inesperado ao salvar reuniÃ£o");
+      toast.error("Erro inesperado ao salvar reunião");
       console.error(error);
     } finally {
       setIsSaving(false);
@@ -66,14 +66,14 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            PrÃ³xima ReuniÃ£o
+            Próxima Reunião
           </CardTitle>
         </CardHeader>
         <CardContent>
           <EmptyState
             icon={Calendar}
-            title="Nenhuma reuniÃ£o agendada"
-            description="Entre em contato com nossa equipe para agendar uma reuniÃ£o"
+            title="Nenhuma reunião agendada"
+            description="Entre em contato com nossa equipe para agendar uma reunião"
             variant="compact"
             withCard={false}
           />

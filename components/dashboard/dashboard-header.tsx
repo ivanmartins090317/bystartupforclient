@@ -86,7 +86,7 @@ export function DashboardHeader({profile}: DashboardHeaderProps) {
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56 bg-white">
             <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

@@ -109,7 +109,7 @@ export function MeetingSummaryModal({
                   </pre>
                 </div>
                 <p className="text-xs text-gray-500 italic">
-                  Este é o conteúdo exato que será baixado ao clicar em "Baixar Resumo"
+                  Este é o conteúdo exato que será baixado ao clicar em Baixar Resumo
                 </p>
               </div>
             </>
