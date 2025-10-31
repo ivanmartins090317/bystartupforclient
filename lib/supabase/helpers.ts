@@ -178,7 +178,67 @@ export async function getContractIds(companyId: string): Promise<ErrorResult<str
 }
 
 /**
+ * Atualiza automaticamente reuniões que já passaram há mais de 10 minutos para status "completed"
+ */
+async function markPastMeetingsAsCompleted(
+  contractIds: string[]
+): Promise<void> {
+  try {
+    if (contractIds.length === 0) {
+      return;
+    }
+
+    const supabase = await createServerComponentClient();
+    const now = new Date();
+    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000); // 10 minutos atrás
+
+    // Buscar reuniões agendadas que já passaram há mais de 10 minutos
+    const {data: pastMeetings, error: selectError} = await supabase
+      .from("meetings")
+      .select("id")
+      .in("contract_id", contractIds)
+      .eq("status", "scheduled")
+      .lt("meeting_date", tenMinutesAgo.toISOString());
+
+    if (selectError) {
+      console.warn("Erro ao buscar reuniões passadas:", selectError);
+      return;
+    }
+
+    if (!pastMeetings || pastMeetings.length === 0) {
+      return;
+    }
+
+    // Atualizar status para "completed"
+    const meetingIds = pastMeetings.map((m) => m.id);
+    const {error: updateError} = await supabase
+      .from("meetings")
+      .update({
+        status: "completed",
+        updated_at: new Date().toISOString()
+      })
+      .in("id", meetingIds);
+
+    if (updateError) {
+      console.warn("Erro ao atualizar reuniões passadas:", updateError);
+    } else if (pastMeetings.length > 0) {
+      console.log(
+        `[markPastMeetingsAsCompleted] ${pastMeetings.length} reunião(ões) marcada(s) como concluída(s)`
+      );
+    }
+  } catch (error) {
+    // Não deve quebrar o fluxo principal, apenas logar
+    console.warn("Erro ao marcar reuniões passadas como concluídas:", error);
+  }
+}
+
+/**
  * Busca próxima reunião agendada
+ * Prioridade:
+ * 1. Banco de dados (reuniões criadas no sistema)
+ * 2. Google Calendar (eventos externos)
+ * 
+ * Nota: Atualiza automaticamente reuniões que já passaram há mais de 10 minutos para "completed"
  */
 export async function getNextMeeting(
   contractIds: string[]
@@ -186,23 +246,94 @@ export async function getNextMeeting(
   try {
     const supabase = await createServerComponentClient();
 
-    if (contractIds.length === 0) {
-      return {data: null, error: null, isError: false};
+    // 0️⃣ Primeiro: atualizar reuniões passadas há mais de 10 minutos
+    if (contractIds.length > 0) {
+      await markPastMeetingsAsCompleted(contractIds);
     }
 
-    const {data, error} = await supabase
-      .from("meetings")
-      .select(
-        "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
-      )
-      .in("contract_id", contractIds)
-      .eq("status", "scheduled")
-      .gte("meeting_date", new Date().toISOString())
-      .order("meeting_date", {ascending: true})
-      .limit(1)
-      .maybeSingle();
+    // 1️⃣ Buscar do banco de dados primeiro
+    if (contractIds.length > 0) {
+      // Buscar reuniões agendadas que ainda não passaram há mais de 10 minutos
+      // (considera reuniões futuras ou que passaram há menos de 10 minutos)
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
-    return handleSupabaseError({data: data || null, error});
+      const {data, error} = await supabase
+        .from("meetings")
+        .select(
+          "id, contract_id, title, department, meeting_date, status, google_calendar_event_id, summary, summary_file_url, created_by, created_at, updated_at"
+        )
+        .in("contract_id", contractIds)
+        .eq("status", "scheduled")
+        .gte("meeting_date", tenMinutesAgo.toISOString())
+        .order("meeting_date", {ascending: true})
+        .limit(1)
+        .maybeSingle();
+
+      const dbResult = handleSupabaseError({data: data || null, error});
+
+      // Se encontrou no banco, retornar
+      if (!dbResult.isError && dbResult.data) {
+        return dbResult;
+      }
+    }
+
+    // 2️⃣ Se não encontrou no banco, tentar buscar do Google Calendar
+    try {
+      const {getGoogleCalendarTokensFromDB} = await import("@/lib/google-calendar/tokens");
+      const {getNextCalendarEvent} = await import("@/lib/google-calendar/client");
+
+      const tokensResult = await getGoogleCalendarTokensFromDB();
+
+      if (tokensResult.isError || !tokensResult.data) {
+        // Sem tokens, retornar null sem erro (calendário não configurado)
+        return {data: null, error: null, isError: false};
+      }
+
+      const calendarEvent = await getNextCalendarEvent(tokensResult.data);
+
+      if (!calendarEvent || !calendarEvent.start?.dateTime) {
+        return {data: null, error: null, isError: false};
+      }
+
+      // Buscar perfil do usuário para campos obrigatórios
+      const profileResult = await getUserProfile();
+      if (profileResult.isError || !profileResult.data) {
+        return {data: null, error: null, isError: false};
+      }
+
+      const profile = profileResult.data;
+
+      // Converter evento do Google Calendar para formato Meeting
+      const eventStart = new Date(calendarEvent.start.dateTime);
+      const eventId = calendarEvent.id || `google-${Date.now()}`;
+
+      // Se não há contratos, não podemos criar uma reunião válida
+      if (contractIds.length === 0) {
+        return {data: null, error: null, isError: false};
+      }
+
+      // Criar objeto Meeting compatível com o tipo
+      const meetingFromCalendar: Meeting = {
+        id: eventId,
+        contract_id: contractIds[0],
+        title: calendarEvent.summary || "Reunião do Google Calendar",
+        department: "comercial", // Default, pode ser melhorado com análise do título/descrição
+        meeting_date: eventStart.toISOString(),
+        status: "scheduled",
+        google_calendar_event_id: calendarEvent.id || null,
+        summary: calendarEvent.description || null,
+        summary_file_url: null,
+        created_by: profile.id,
+        created_at: eventStart.toISOString(),
+        updated_at: eventStart.toISOString()
+      };
+
+      return {data: meetingFromCalendar, error: null, isError: false};
+    } catch (calendarError) {
+      // Erro ao buscar do Google Calendar não deve impedir o retorno
+      console.warn("Erro ao buscar reunião do Google Calendar:", calendarError);
+      return {data: null, error: null, isError: false};
+    }
   } catch (error) {
     return {
       data: null,
@@ -214,6 +345,15 @@ export async function getNextMeeting(
 
 /**
  * Busca reuniões recentes
+ * 
+ * Critérios para aparecer:
+ * 1. Deve estar associada a um contrato da empresa (contract_id em contractIds)
+ * 2. Status deve ser "completed" ou "scheduled" (não "cancelled")
+ * 3. Ordena por data mais recente primeiro
+ * 4. Limita a 10 reuniões
+ * 
+ * Observação: Reuniões passadas são automaticamente marcadas como "completed"
+ * após 10 minutos do horário agendado (ver markPastMeetingsAsCompleted)
  */
 export async function getRecentMeetings(
   contractIds: string[]
@@ -224,6 +364,9 @@ export async function getRecentMeetings(
     if (contractIds.length === 0) {
       return {data: [], error: null, isError: false};
     }
+
+    // Primeiro, garantir que reuniões passadas sejam atualizadas
+    await markPastMeetingsAsCompleted(contractIds);
 
     const {data, error} = await supabase
       .from("meetings")

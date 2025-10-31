@@ -108,6 +108,30 @@ export default async function AdminPage() {
         </Card>
       </div>
 
+      {/* Links rápidos */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Link href="/admin/contracts">
+          <Card className="hover:bg-muted/50 cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Contratos
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </Link>
+        <Link href="/admin/meetings">
+          <Card className="hover:bg-muted/50 cursor-pointer transition-colors">
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Reuniões
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </Link>
+      </div>
+
       {/* Últimos contratos */}
       <Card>
         <CardHeader className="flex items-center justify-between">

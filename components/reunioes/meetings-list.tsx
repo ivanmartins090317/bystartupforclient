@@ -4,7 +4,7 @@ import {useState} from "react";
 import {Card, CardContent} from "@/components/ui/card";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
-import {Calendar, Clock, Download, Eye, Users} from "lucide-react";
+import {Building, Calendar, Clock, Download, Eye, Users} from "lucide-react";
 import {format, isFuture, isPast, isToday} from "date-fns";
 import {ptBR} from "date-fns/locale";
 import type {Meeting, DepartmentFilter, PeriodFilter} from "@/types";
@@ -114,8 +114,11 @@ export function MeetingsList({meetings}: MeetingsListProps) {
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Departamento" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
+          <SelectContent className="bg-white">
+            <SelectItem value="all">
+              <Building className="h-4 w-4" />
+              Departamento
+            </SelectItem>
             <SelectItem value="comercial">Comercial</SelectItem>
             <SelectItem value="tecnologia">Tecnologia</SelectItem>
             <SelectItem value="marketing">Marketing</SelectItem>
@@ -126,8 +129,10 @@ export function MeetingsList({meetings}: MeetingsListProps) {
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Período" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
+          <SelectContent className="bg-white">
+            <SelectItem value="all">
+              <Calendar className="h-4 w-4" /> Reuniões
+            </SelectItem>
             <SelectItem value="today">Hoje</SelectItem>
             <SelectItem value="upcoming">Próximas</SelectItem>
             <SelectItem value="past">Passadas</SelectItem>

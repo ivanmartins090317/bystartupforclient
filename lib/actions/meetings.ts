@@ -9,6 +9,8 @@ import {
 import {checkTimeSlotAvailability} from "@/lib/google-calendar/availability";
 import {canModifyMeeting} from "@/lib/utils/meeting-validation";
 import type {GoogleCalendarAuthTokens} from "@/lib/google-calendar/types";
+import {createServerComponentClient} from "@/lib/supabase/server";
+import {revalidatePath} from "next/cache";
 
 /**
  * Busca tokens do Google Calendar
@@ -232,6 +234,132 @@ export async function deleteMeeting(meetingId: string) {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Erro ao excluir reunião"
+    };
+  }
+}
+
+/**
+ * Cria nova reunião (admin)
+ */
+export interface CreateMeetingInput {
+  contract_id: string;
+  title: string;
+  department: "comercial" | "tecnologia" | "marketing";
+  meeting_date: string; // ISO string
+}
+
+export async function createMeeting(input: CreateMeetingInput) {
+  try {
+    const supabase = await createServerComponentClient();
+
+    // Verificar autenticação e se é admin
+    const {
+      data: {user},
+      error: authError
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return {
+        success: false,
+        error: "Não autenticado"
+      };
+    }
+
+    // Verificar se é admin
+    const {data: profile} = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role !== "admin") {
+      return {
+        success: false,
+        error: "Apenas administradores podem criar reuniões"
+      };
+    }
+
+    // Validar data (deve ser no futuro)
+    const meetingDate = new Date(input.meeting_date);
+    if (meetingDate <= new Date()) {
+      return {
+        success: false,
+        error: "A data da reunião deve ser no futuro"
+      };
+    }
+
+    // Verificar disponibilidade no Google Calendar (se configurado)
+    const tokens = await getGoogleCalendarTokens();
+    if (tokens) {
+      try {
+        const endTime = new Date(meetingDate.getTime() + 60 * 60 * 1000); // +1 hora
+        const isAvailable = await checkTimeSlotAvailability(tokens, meetingDate, endTime);
+
+        if (!isAvailable) {
+          return {
+            success: false,
+            error:
+              "Este horário não está disponível no calendário do administrador. Por favor, escolha outro horário."
+          };
+        }
+      } catch (error) {
+        // Log erro mas continua (não bloqueia criação se houver problema na verificação)
+        console.error("Erro ao verificar disponibilidade:", error);
+      }
+    }
+
+    // Criar reunião no banco
+    const {data: meeting, error: insertError} = await supabase
+      .from("meetings")
+      .insert({
+        contract_id: input.contract_id,
+        title: input.title,
+        department: input.department,
+        meeting_date: input.meeting_date,
+        status: "scheduled",
+        created_by: user.id
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      return {
+        success: false,
+        error: insertError.message || "Erro ao criar reunião"
+      };
+    }
+
+    // Tentar salvar no Google Calendar (se configurado)
+    if (tokens && meeting) {
+      try {
+        const calendarEventId = await saveMeetingToCalendar(tokens, meeting);
+
+        if (calendarEventId) {
+          // Atualizar reunião com google_calendar_event_id
+          await supabase
+            .from("meetings")
+            .update({google_calendar_event_id: calendarEventId})
+            .eq("id", meeting.id);
+        }
+      } catch (error) {
+        // Log erro mas continua (não bloqueia criação)
+        console.error("Erro ao salvar no Google Calendar:", error);
+      }
+    }
+
+    // Revalidar páginas
+    revalidatePath("/admin/meetings");
+    revalidatePath("/dashboard");
+    revalidatePath("/reunioes");
+
+    return {
+      success: true,
+      data: {meeting}
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Erro ao criar reunião"
     };
   }
 }
