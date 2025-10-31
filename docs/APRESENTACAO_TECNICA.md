@@ -2,7 +2,7 @@
 
 **Versão:** 1.0  
 **Data:** Janeiro 2025  
-**Apresentação para:** Clientes com conhecimento técnico médio em desenvolvimento de software
+**Apresentação para:** Clientes com conhecimento técnico em desenvolvimento de software
 
 ---
 
