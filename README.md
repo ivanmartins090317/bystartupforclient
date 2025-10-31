@@ -279,6 +279,10 @@ bystartupforclient/
 
 ### Vercel (Recomendado)
 
+Veja o guia completo e detalhado em **[docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)**
+
+**Resumo rápido:**
+
 1. **Faça push do código para o GitHub**
 
 2. **Importe o projeto na Vercel**
@@ -290,11 +294,18 @@ bystartupforclient/
 3. **Configure as variáveis de ambiente**
 
    - Adicione todas as variáveis do `.env.local`
-   - Atenção especial para as URLs de produção
+   - ⚠️ **Importante:** Atualize `NEXT_PUBLIC_APP_URL` para a URL da Vercel
+   - ⚠️ **Importante:** Atualize `GOOGLE_REDIRECT_URI` se usar Google Calendar
 
-4. **Deploy**
+4. **Atualize configurações externas**
+   - Supabase: Adicione a URL da Vercel em Redirect URLs
+   - Google Cloud Console: Adicione a URL de callback (se aplicável)
+
+5. **Deploy**
    - A Vercel fará o build e deploy automaticamente
    - Cada push na branch main gera um novo deploy
+
+📖 **Para instruções detalhadas, consulte [docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md)**
 
 ### PWA
 
