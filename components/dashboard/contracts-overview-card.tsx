@@ -65,7 +65,7 @@ export function ContractsOverviewCard({
                     </p>
                   </div>
                   {contract.id === activeContractId && (
-                    <Badge className="bg-primary-500 text-secondary-900 ml-2">
+                    <Badge className="bg-green-100 text-green-500 ml-2 hover:bg-green-300">
                       Ativo
                     </Badge>
                   )}
@@ -75,7 +75,7 @@ export function ContractsOverviewCard({
 
             {contracts.length > 3 && (
               <p className="text-xs text-center text-gray-600 pt-2">
-                E mais {contracts.length - 3} contrato
+                E mais {contracts.length - 2} contrato
                 {contracts.length - 3 > 1 ? "s" : ""}
               </p>
             )}

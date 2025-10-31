@@ -89,7 +89,7 @@ export function MeetingForm({contracts}: MeetingFormProps) {
             <SelectTrigger id="contract">
               <SelectValue placeholder="Selecione um contrato" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               {validContracts.map((contract) => (
                 <SelectItem key={contract.id} value={contract.id}>
                   {contract.title} - {contract.contract_number}
@@ -98,9 +98,7 @@ export function MeetingForm({contracts}: MeetingFormProps) {
             </SelectContent>
           </Select>
           {validContracts.length === 0 && (
-            <p className="text-sm text-gray-500 mt-1">
-              Nenhum contrato ativo disponível
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Nenhum contrato ativo disponível</p>
           )}
         </div>
 
@@ -119,13 +117,15 @@ export function MeetingForm({contracts}: MeetingFormProps) {
           <Label htmlFor="department">Departamento *</Label>
           <Select
             value={department}
-            onValueChange={(v) => setDepartment(v as "comercial" | "tecnologia" | "marketing")}
+            onValueChange={(v) =>
+              setDepartment(v as "comercial" | "tecnologia" | "marketing")
+            }
             required
           >
             <SelectTrigger id="department">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-white">
               <SelectItem value="comercial">{DEPARTMENT_LABELS.comercial}</SelectItem>
               <SelectItem value="tecnologia">{DEPARTMENT_LABELS.tecnologia}</SelectItem>
               <SelectItem value="marketing">{DEPARTMENT_LABELS.marketing}</SelectItem>
@@ -159,7 +159,11 @@ export function MeetingForm({contracts}: MeetingFormProps) {
       </div>
 
       <div className="flex gap-3">
-        <Button type="submit" disabled={isSubmitting || validContracts.length === 0}>
+        <Button
+          variant="outline"
+          type="submit"
+          disabled={isSubmitting || validContracts.length === 0}
+        >
           {isSubmitting ? "Criando..." : "Criar Reunião"}
         </Button>
         <Button
@@ -174,4 +178,3 @@ export function MeetingForm({contracts}: MeetingFormProps) {
     </form>
   );
 }
-

@@ -23,6 +23,12 @@ const statusColors: Record<string, string> = {
   cancelled: "bg-red-100 text-red-700"
 };
 
+const departmentColors: Record<string, string> = {
+  comercial: "bg-blue-100 text-blue-700",
+  tecnologia: "bg-purple-100 text-purple-700",
+  marketing: "bg-pink-100 text-pink-700"
+};
+
 export function RecentMeetingsCard({meetings}: RecentMeetingsCardProps) {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,7 +71,10 @@ export function RecentMeetingsCard({meetings}: RecentMeetingsCardProps) {
                       {meeting.title}
                     </h4>
                     <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge
+                        variant="outline"
+                        className={`text-xs ${departmentColors[meeting.department]}`}
+                      >
                         {DEPARTMENT_LABELS[meeting.department]}
                       </Badge>
                       <Badge className={`text-xs ${statusColors[meeting.status]}`}>

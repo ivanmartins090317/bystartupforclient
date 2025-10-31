@@ -4,33 +4,47 @@ import {useState, useTransition} from "react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 import {Textarea} from "@/components/ui/textarea";
 import {createContract, updateContract} from "@/app/(admin)/admin/contracts/actions";
 import {uploadContractDocument} from "@/app/(admin)/admin/contracts/[id]/upload/action";
 import {useRouter} from "next/navigation";
 import {toast} from "sonner";
+import type {Contract} from "@/types";
 
-interface CompanyOption { id: string; name: string }
+interface CompanyOption {
+  id: string;
+  name: string;
+}
 
 interface ContractFormProps {
   mode: "create" | "edit";
   companies: CompanyOption[];
-  initial?: any;
+  initial?: Contract;
 }
 
 export function ContractForm({mode, companies, initial}: ContractFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const validCompanies = companies.filter(c => c.name.toLowerCase() !== "bystartup");
+  const validCompanies = companies.filter((c) => c.name.toLowerCase() !== "bystartup");
   const [companyId, setCompanyId] = useState(
     initial?.company_id ?? (validCompanies[0]?.id || "")
   );
-  const [status, setStatus] = useState<"active" | "inactive">(initial?.status ?? "active");
+  const [status, setStatus] = useState<"active" | "inactive">(
+    initial?.status ?? "active"
+  );
   const [number, setNumber] = useState(initial?.contract_number ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [desc, setDesc] = useState<string>(initial?.description ?? "");
-  const [signed, setSigned] = useState<string>(initial?.signed_date ?? new Date().toISOString().slice(0,10));
+  const [signed, setSigned] = useState<string>(
+    initial?.signed_date ?? new Date().toISOString().slice(0, 10)
+  );
   const [file, setFile] = useState<File | null>(null);
   const [publish, setPublish] = useState(true);
 
@@ -49,7 +63,12 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
             status
           });
         } else {
-          await updateContract(initial.id, {
+          // Quando mode é "edit", initial é obrigatório
+          const contractToUpdate = initial;
+          if (!contractToUpdate) {
+            throw new Error("Contrato inicial não fornecido para edição");
+          }
+          await updateContract(contractToUpdate.id, {
             company_id: companyId,
             contract_number: number,
             title,
@@ -58,7 +77,11 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
             status
           });
           if (file) {
-            await uploadContractDocument({contractId: initial.id, file, publish});
+            await uploadContractDocument({
+              contractId: contractToUpdate.id,
+              file,
+              publish
+            });
           }
         }
         toast.success("Contrato salvo com sucesso.", {id: toastId});
@@ -72,16 +95,22 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6 max-w-2xl">
-      <h1 className="text-xl font-semibold">{mode === "create" ? "Novo contrato" : "Editar contrato"}</h1>
+      <h1 className="text-xl font-semibold">
+        {mode === "create" ? "Novo contrato" : "Editar contrato"}
+      </h1>
 
       <div className="grid gap-4">
         <div>
           <Label>Empresa</Label>
           <Select value={companyId} onValueChange={setCompanyId}>
-            <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
-            <SelectContent>
-              {validCompanies.map(c => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent className="bg-white">
+              {validCompanies.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -89,13 +118,18 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Número</Label>
-            <Input value={number} onChange={e => setNumber(e.target.value)} required />
+            <Input value={number} onChange={(e) => setNumber(e.target.value)} required />
           </div>
           <div>
             <Label>Status</Label>
-            <Select value={status} onValueChange={v => setStatus(v as any)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v as "active" | "inactive")}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white">
                 <SelectItem value="active">Ativo</SelectItem>
                 <SelectItem value="inactive">Inativo</SelectItem>
               </SelectContent>
@@ -104,16 +138,21 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
         </div>
         <div>
           <Label>Título</Label>
-          <Input value={title} onChange={e => setTitle(e.target.value)} required />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} required />
         </div>
         <div>
           <Label>Descrição</Label>
-          <Textarea value={desc} onChange={e => setDesc(e.target.value)} rows={4} />
+          <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={4} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Assinado em</Label>
-            <Input type="date" value={signed} onChange={e => setSigned(e.target.value)} required />
+            <Input
+              type="date"
+              value={signed}
+              onChange={(e) => setSigned(e.target.value)}
+              required
+            />
           </div>
         </div>
       </div>
@@ -121,19 +160,27 @@ export function ContractForm({mode, companies, initial}: ContractFormProps) {
       {mode === "edit" && (
         <div className="space-y-2">
           <Label>Upload do PDF (opcional)</Label>
-          <Input type="file" accept="application/pdf" onChange={e => setFile(e.target.files?.[0] || null)} />
+          <Input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
+          />
           <label className="inline-flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={publish} onChange={e => setPublish(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={publish}
+              onChange={(e) => setPublish(e.target.checked)}
+            />
             Publicar agora
           </label>
         </div>
       )}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={isPending}>{isPending ? "Salvando..." : "Salvar"}</Button>
+        <Button variant="outline" type="submit" disabled={isPending}>
+          {isPending ? "Salvando..." : "Salvar"}
+        </Button>
       </div>
     </form>
   );
 }
-
-

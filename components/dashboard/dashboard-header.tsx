@@ -57,7 +57,7 @@ export function DashboardHeader({profile}: DashboardHeaderProps) {
           {/* Logo Cliente */}
           {profile.companies && (
             <>
-              <div className="w-px h-8 bg-gray-200" />
+              {/* <div className="w-px h-8 bg-gray-200" />
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 bg-primary rounded flex items-center justify-center text-white font-bold text-sm">
                   {profile.companies.name?.charAt(0) || "T"}
@@ -65,7 +65,7 @@ export function DashboardHeader({profile}: DashboardHeaderProps) {
                 <span className="text-sm font-semibold text-gray-700">
                   {profile.companies.name}
                 </span>
-              </div>
+              </div> */}
             </>
           )}
         </div>

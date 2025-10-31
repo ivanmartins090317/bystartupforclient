@@ -7,6 +7,9 @@ export async function updateSession(request: NextRequest) {
       request
     });
 
+    // Rotas públicas
+    const publicRoutes = ["/login"];
+
     // Verificar se as variáveis de ambiente estão configuradas
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -38,13 +41,55 @@ export async function updateSession(request: NextRequest) {
       error: userError
     } = await supabase.auth.getUser();
 
-    // Se houver erro ao buscar usuário, continua sem autenticação
+    // Se houver erro ao buscar usuário
     if (userError) {
-      console.error("[Middleware] Erro ao buscar usuário:", userError.message);
+      // Erro específico de refresh token inválido - limpar sessão e redirecionar
+      const isRefreshTokenError =
+        userError.message.includes("refresh_token_not_found") ||
+        userError.message.includes("Invalid Refresh Token") ||
+        (userError as {code?: string}).code === "refresh_token_not_found" ||
+        userError.status === 400;
+
+      if (isRefreshTokenError) {
+        console.warn(
+          "[Middleware] Refresh token inválido, limpando sessão e redirecionando para login"
+        );
+
+        // Limpar cookies de sessão do Supabase
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.pathname = "/login";
+        
+        const response = NextResponse.redirect(redirectUrl);
+        
+        // Remover todos os cookies relacionados ao Supabase
+        request.cookies.getAll().forEach((cookie) => {
+          if (
+            cookie.name.includes("supabase") ||
+            cookie.name.includes("sb-") ||
+            cookie.name.includes("auth-token")
+          ) {
+            response.cookies.delete(cookie.name);
+          }
+        });
+
+        // Se não estiver em rota pública, redirecionar para login
+        const isPublicRoute = publicRoutes.some((route) =>
+          request.nextUrl.pathname.startsWith(route)
+        );
+
+        if (!isPublicRoute) {
+          return response;
+        }
+
+        // Se estiver em rota pública, continua normalmente sem redirecionar
+        return supabaseResponse;
+      } else {
+        // Outros erros apenas logam
+        console.error("[Middleware] Erro ao buscar usuário:", userError.message);
+      }
     }
 
-    // Rotas públicas
-    const publicRoutes = ["/login"];
+    // Verificar se é rota pública
     const isPublicRoute = publicRoutes.some((route) =>
       request.nextUrl.pathname.startsWith(route)
     );

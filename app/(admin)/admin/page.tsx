@@ -115,7 +115,7 @@ export default async function AdminPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Contratos
+                Criar Contratos
               </CardTitle>
             </CardHeader>
           </Card>
@@ -125,7 +125,7 @@ export default async function AdminPage() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Reuniões
+                Criar Reuniões
               </CardTitle>
             </CardHeader>
           </Card>

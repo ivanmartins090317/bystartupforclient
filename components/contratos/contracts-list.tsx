@@ -96,11 +96,11 @@ export function ContractsList({contracts, publishedIds = []}: ContractsListProps
                     <Badge className="bg-primary-500 text-secondary-900">Publicado</Badge>
                   )}
                   <Badge
-                  className={
-                    contract.status === "active"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-gray-100 text-gray-700"
-                  }
+                    className={
+                      contract.status === "active"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-700"
+                    }
                   >
                     {contract.status === "active" ? "Ativo" : "Inativo"}
                   </Badge>
@@ -149,8 +149,8 @@ export function ContractsList({contracts, publishedIds = []}: ContractsListProps
                   className="flex-1"
                   onClick={() => setOpenContractId(contract.id)}
                 >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Visualizar
+                  <Download className="h-4 w-4 mr-1" />
+                  baixar
                 </Button>
                 {contract.contract_file_url && (
                   <Button variant="outline" size="sm" asChild className="flex-1">

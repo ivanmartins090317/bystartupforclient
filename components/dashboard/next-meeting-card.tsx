@@ -87,7 +87,7 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
 
   return (
     <>
-      <Card className="border-primary-200 bg-primary-50/50">
+      <Card className="border-accent-200 bg-primary-50/50">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Calendar className="h-5 w-5 text-primary-600" />
@@ -130,24 +130,28 @@ export function NextMeetingCard({meeting}: NextMeetingCardProps) {
               className="flex-1 sm:flex-none"
             >
               <Save className="h-4 w-4 mr-2" />
-              {isSaving ? "Salvando..." : isSavedInCalendar ? "Salvar" : "Salvar"}
+              {isSaving
+                ? "Salvando na agenda..."
+                : isSavedInCalendar
+                ? "Aceitar"
+                : "Aceitar"}
             </Button>
 
             <Button
               variant="outline"
               size="sm"
               onClick={() => setRescheduleModalOpen(true)}
-              className="flex-1 sm:flex-none"
+              className="flex-1 sm:flex-none bg-none"
             >
               <CalendarDays className="h-4 w-4 mr-2" />
               Reagendar
             </Button>
 
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setDeleteModalOpen(true)}
-              className="flex-1 sm:flex-none text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="flex-1 sm:flex-none text-red-400 hover:text-red-500 hover:bg-red-50"
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Excluir
