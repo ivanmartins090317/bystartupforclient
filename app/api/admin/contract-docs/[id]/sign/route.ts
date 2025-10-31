@@ -2,8 +2,9 @@ import {NextResponse} from "next/server";
 import {createClient} from "@supabase/supabase-js";
 export const dynamic = "force-dynamic";
 
-export async function GET(_req: Request, {params}: {params: {id: string}}) {
+export async function GET(_req: Request, ctx: {params: Promise<{id: string}>}) {
   try {
+    const {id} = await ctx.params;
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
     if (!supabaseUrl || !serviceKey) return NextResponse.json({error: "missing_config"}, {status: 500});
@@ -13,7 +14,7 @@ export async function GET(_req: Request, {params}: {params: {id: string}}) {
     const {data: doc, error} = await supabase
       .from("contract_documents")
       .select("storage_path, file_name, mime_type")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
     if (error || !doc) return NextResponse.json({error: error?.message || "not_found"}, {status: 404});
 

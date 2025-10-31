@@ -27,7 +27,7 @@ export async function GET(req: Request, ctx: {params: Promise<{id: string}>}) {
     if (!useDoc) {
       const {data: fallback} = await supabase
         .from("contract_documents")
-        .select("storage_path, file_name, mime_type, created_at")
+        .select("storage_path, file_name, mime_type, published_at, created_at")
         .eq("contract_id", id)
         .order("created_at", {ascending: false})
         .limit(1)

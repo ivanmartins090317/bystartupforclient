@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     ],
     apple: "/favico-bystartup.svg"
   },
-  themeColor: "#34372e",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

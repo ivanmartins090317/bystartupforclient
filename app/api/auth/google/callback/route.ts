@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
     // Salvar tokens no banco de dados
     const saveResult = await saveGoogleCalendarTokens(profile.id, {
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token,
-      expiry_date: tokens.expiry_date
+      refresh_token: tokens.refresh_token ?? undefined,
+      expiry_date: tokens.expiry_date ?? undefined
     });
 
     if (saveResult.isError) {

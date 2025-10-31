@@ -159,8 +159,7 @@ export async function saveGoogleCalendarTokens(
           expiry_date: expiryDate
         },
         {
-          onConflict: "admin_id",
-          returning: "minimal"
+          onConflict: "admin_id"
         }
       )
       .select()
