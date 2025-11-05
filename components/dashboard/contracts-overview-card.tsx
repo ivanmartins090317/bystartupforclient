@@ -64,7 +64,7 @@ export function ContractsOverviewCard({
                       Nº {contract.contract_number}
                     </p>
                   </div>
-                  {contract.id === activeContractId && (
+                  {contract.status === "active" && (
                     <Badge className="bg-green-100 text-green-500 ml-2 hover:bg-green-300">
                       Ativo
                     </Badge>

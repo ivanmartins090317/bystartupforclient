@@ -180,9 +180,7 @@ export async function getContractIds(companyId: string): Promise<ErrorResult<str
 /**
  * Atualiza automaticamente reuniões que já passaram há mais de 10 minutos para status "completed"
  */
-async function markPastMeetingsAsCompleted(
-  contractIds: string[]
-): Promise<void> {
+async function markPastMeetingsAsCompleted(contractIds: string[]): Promise<void> {
   try {
     if (contractIds.length === 0) {
       return;
@@ -237,7 +235,7 @@ async function markPastMeetingsAsCompleted(
  * Prioridade:
  * 1. Banco de dados (reuniões criadas no sistema)
  * 2. Google Calendar (eventos externos)
- * 
+ *
  * Nota: Atualiza automaticamente reuniões que já passaram há mais de 10 minutos para "completed"
  */
 export async function getNextMeeting(
@@ -279,7 +277,9 @@ export async function getNextMeeting(
 
     // 2️⃣ Se não encontrou no banco, tentar buscar do Google Calendar
     try {
-      const {getGoogleCalendarTokensFromDB} = await import("@/lib/google-calendar/tokens");
+      const {getGoogleCalendarTokensFromDB} = await import(
+        "@/lib/google-calendar/tokens"
+      );
       const {getNextCalendarEvent} = await import("@/lib/google-calendar/client");
 
       const tokensResult = await getGoogleCalendarTokensFromDB();
@@ -345,13 +345,13 @@ export async function getNextMeeting(
 
 /**
  * Busca reuniões recentes
- * 
+ *
  * Critérios para aparecer:
  * 1. Deve estar associada a um contrato da empresa (contract_id em contractIds)
  * 2. Status deve ser "completed" ou "scheduled" (não "cancelled")
  * 3. Ordena por data mais recente primeiro
  * 4. Limita a 10 reuniões
- * 
+ *
  * Observação: Reuniões passadas são automaticamente marcadas como "completed"
  * após 10 minutos do horário agendado (ver markPastMeetingsAsCompleted)
  */
@@ -401,6 +401,38 @@ export async function getContractServices(
       .from("services")
       .select("id, contract_id, name, description, type, created_at")
       .eq("contract_id", contractId)
+      .order("created_at", {ascending: false});
+
+    return handleSupabaseError({data: data || [], error});
+  } catch (error) {
+    return {
+      data: null,
+      error: error instanceof Error ? error.message : "Erro ao buscar serviços",
+      isError: true
+    };
+  }
+}
+
+/**
+ * Busca serviços de múltiplos contratos ativos
+ *
+ * Útil para mostrar todos os serviços de todos os contratos ativos no dashboard
+ */
+export async function getServicesByContracts(
+  contractIds: string[]
+): Promise<ErrorResult<Service[]>> {
+  try {
+    const supabase = await createServerComponentClient();
+
+    // Se não há contratos, retorna array vazio
+    if (contractIds.length === 0) {
+      return {data: [], error: null, isError: false};
+    }
+
+    const {data, error} = await supabase
+      .from("services")
+      .select("id, contract_id, name, description, type, created_at")
+      .in("contract_id", contractIds)
       .order("created_at", {ascending: false});
 
     return handleSupabaseError({data: data || [], error});
@@ -517,9 +549,7 @@ export async function updateMeeting(
 /**
  * Busca reuniÃ£o por ID
  */
-export async function getMeetingById(
-  meetingId: string
-): Promise<ErrorResult<Meeting>> {
+export async function getMeetingById(meetingId: string): Promise<ErrorResult<Meeting>> {
   try {
     const supabase = await createServerComponentClient();
 

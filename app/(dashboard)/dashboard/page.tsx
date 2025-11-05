@@ -4,7 +4,7 @@ import {
   getContractIds,
   getNextMeeting,
   getRecentMeetings,
-  getContractServices
+  getServicesByContracts
 } from "@/lib/supabase/helpers";
 import {ErrorMessage} from "@/components/shared/error-message";
 import {WelcomeCard} from "@/components/dashboard/welcome-card";
@@ -65,14 +65,11 @@ export default async function DashboardPage() {
   const contractIds = contractIdsResult.data || [];
 
   // 3️⃣ Paralelização: Executar todas as queries finais simultaneamente
-  // (todas dependem apenas dos contractIds que já temos)
   const [nextMeetingResult, recentMeetingsResult, servicesResult] = await Promise.all([
     getNextMeeting(contractIds),
     getRecentMeetings(contractIds),
-    // Serviços só busca se houver contrato ativo, senão retorna empty
-    activeContract
-      ? getContractServices(activeContract.id)
-      : Promise.resolve({data: [], error: null, isError: false})
+    // Agora busca serviços de TODOS os contratos ativos
+    getServicesByContracts(contractIds)
   ]);
 
   return (
@@ -125,7 +122,7 @@ export default async function DashboardPage() {
           ) : (
             <ContractServicesCard
               services={servicesResult.data || []}
-              contractTitle={activeContract?.title}
+              contractTitle="Contratos Ativos"
             />
           )}
         </div>
